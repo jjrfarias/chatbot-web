@@ -27,7 +27,7 @@ homeRouter.get("/summary", async (_req, res) => {
       type: "Venda" as const,
       detail: s.deviceName,
       value: s.totalToPay,
-      status: "Concluído",
+      status: "Venda concluída",
     })),
     ...allRepairs.map((r) => ({
       date: r.createdAt,
@@ -35,7 +35,7 @@ homeRouter.get("/summary", async (_req, res) => {
       type: "Conserto" as const,
       detail: r.model,
       value: r.estimatedBudget,
-      status: r.status,
+      status: r.status === "Concluído" ? "Conserto concluído" : r.status,
     })),
   ]
     .sort((a, b) => b.date.getTime() - a.date.getTime())

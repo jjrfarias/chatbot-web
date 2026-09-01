@@ -1,5 +1,12 @@
 import type {
   ChecklistCategory,
+  CrmBoard,
+  CrmActions,
+  CrmInteraction,
+  CrmMessageTemplate,
+  CrmOpportunity,
+  CrmTag,
+  CrmTask,
   CustomerDetail,
   CustomerSummary,
   DefectOption,
@@ -53,17 +60,43 @@ export const api = {
     checklistAnswers?: string[];
     warrantyKey: string;
     paymentMethod: string;
+    opportunityId?: string;
   }) => request<Sale>("/sales", { method: "POST", body: JSON.stringify(payload) }),
 
   getCustomers: (q?: string) => request<CustomerSummary[]>(`/customers${q ? `?q=${encodeURIComponent(q)}` : ""}`),
   getCustomer: (id: string) => request<CustomerDetail>(`/customers/${id}`),
   createCustomer: (payload: { name: string; phone: string; cpf?: string }) =>
     request<CustomerSummary>("/customers", { method: "POST", body: JSON.stringify(payload) }),
+  updateCustomer: (id: string, payload: Record<string, unknown>) =>
+    request<CustomerSummary>(`/customers/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+
+  getCrmBoard: (pipeline: "vendas" | "assistencia" = "vendas") => request<CrmBoard>(`/crm/board?pipeline=${pipeline}`),
+  createOpportunity: (payload: Record<string, unknown>) =>
+    request<CrmOpportunity>("/crm/opportunities", { method: "POST", body: JSON.stringify(payload) }),
+  updateOpportunity: (id: string, payload: Record<string, unknown>) =>
+    request<CrmOpportunity>(`/crm/opportunities/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  createInteraction: (payload: { customerId: string; type: string; content: string; staffId?: string }) =>
+    request<CrmInteraction>("/crm/interactions", { method: "POST", body: JSON.stringify(payload) }),
+  createCrmTask: (payload: Record<string, unknown>) =>
+    request<CrmTask>("/crm/tasks", { method: "POST", body: JSON.stringify(payload) }),
+  updateCrmTask: (id: string, completed: boolean) =>
+    request<CrmTask>(`/crm/tasks/${id}`, { method: "PATCH", body: JSON.stringify({ completed }) }),
+  getCrmActions: () => request<CrmActions>("/crm/actions/today"),
+  addCustomerTag: (customerId: string, name: string, color?: string) =>
+    request<CrmTag>(`/crm/customers/${customerId}/tags`, { method: "POST", body: JSON.stringify({ name, color }) }),
+  getMessageTemplates: () => request<CrmMessageTemplate[]>("/crm/message-templates"),
+  updateMessageTemplates: (templates: { id: string; content: string; active: boolean }[]) =>
+    request<CrmMessageTemplate[]>("/crm/message-templates", { method: "PUT", body: JSON.stringify({ templates }) }),
+  openWhatsApp: (payload: { customerId: string; phone: string; message: string; templateName?: string }) =>
+    request<{ url: string }>("/crm/whatsapp/open", { method: "POST", body: JSON.stringify(payload) }),
 
   getRepairs: () => request<Repair[]>("/repairs"),
+  updateRepairStatus: (id: string, status: string) =>
+    request<Repair>(`/repairs/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
   createRepair: (payload: {
     customerName: string;
     customerId?: string;
+    customerPhone?: string;
     model: string;
     color?: string;
     imei?: string;
@@ -73,9 +106,29 @@ export const api = {
   }) => request<Repair>("/repairs", { method: "POST", body: JSON.stringify(payload) }),
 
   getInventoryDevices: () => request<InventoryDevice[]>("/inventory/devices"),
+  createInventoryDevice: (payload: {
+    name: string;
+    storage: string;
+    color?: string;
+    condition: string;
+    quantity: number;
+    minQuantity?: number;
+    costPrice: number;
+    salePrice: number;
+  }) => request<InventoryDevice>("/inventory/devices", { method: "POST", body: JSON.stringify(payload) }),
   getInventoryParts: () => request<InventoryPart[]>("/inventory/parts"),
+  createInventoryPart: (payload: {
+    name: string;
+    compatible: string;
+    quantity: number;
+    minQuantity?: number;
+    supplier?: string;
+    costPrice: number;
+  }) => request<InventoryPart>("/inventory/parts", { method: "POST", body: JSON.stringify(payload) }),
 
   getStaff: () => request<StaffUser[]>("/staff"),
+  createStaff: (payload: { name: string; role: string }) =>
+    request<StaffUser>("/staff", { method: "POST", body: JSON.stringify(payload) }),
   toggleStaffPermission: (id: string, key: string, value: boolean) =>
     request<StaffUser>(`/staff/${id}/permissions`, { method: "PATCH", body: JSON.stringify({ key, value }) }),
 

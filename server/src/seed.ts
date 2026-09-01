@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -155,6 +156,11 @@ const staffUsers = [
 ];
 
 async function main() {
+  await prisma.customerTag.deleteMany();
+  await prisma.crmTask.deleteMany();
+  await prisma.crmInteraction.deleteMany();
+  await prisma.crmOpportunity.deleteMany();
+  await prisma.crmTag.deleteMany();
   await prisma.saleTradeInAnswer.deleteMany();
   await prisma.sale.deleteMany();
   await prisma.repair.deleteMany();

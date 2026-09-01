@@ -41,11 +41,18 @@ customersRouter.get("/", async (req, res) => {
 customersRouter.get("/:id", async (req, res) => {
   const customer = await prisma.customer.findUnique({
     where: { id: req.params.id },
-    include: { sales: true, repairs: true },
+    include: {
+      sales: true,
+      repairs: true,
+      opportunities: { include: { assignedTo: true }, orderBy: { updatedAt: "desc" } },
+      interactions: { include: { staff: true }, orderBy: { createdAt: "desc" } },
+      tasks: { include: { assignedTo: true }, orderBy: { dueAt: "asc" } },
+      tags: { include: { tag: true } },
+    },
   });
   if (!customer) return res.status(404).json({ error: "Cliente não encontrado" });
 
-  const { sales, repairs, ...customerFields } = customer;
+  const { sales, repairs, tags, ...customerFields } = customer;
 
   const totalSpent =
     sales.reduce((s, sale) => s + sale.totalToPay, 0) + repairs.reduce((s, r) => s + r.estimatedBudget, 0);
@@ -60,14 +67,14 @@ customersRouter.get("/:id", async (req, res) => {
       detail: s.deviceName,
       date: s.createdAt,
       value: s.totalToPay,
-      status: "Concluído",
+      status: "Venda concluída",
     })),
     ...repairs.map((r) => ({
       type: "Conserto" as const,
       detail: r.model,
       date: r.createdAt,
       value: r.estimatedBudget,
-      status: r.status,
+      status: r.status === "Concluído" ? "Conserto concluído" : r.status,
     })),
   ].sort((a, b) => b.date.getTime() - a.date.getTime());
 
@@ -79,8 +86,26 @@ customersRouter.get("/:id", async (req, res) => {
     status,
     salesCount: sales.length,
     repairsCount: repairs.length,
+    tags: tags.map((item) => item.tag),
     history,
   });
+});
+
+customersRouter.patch("/:id", async (req, res) => {
+  const { name, phone, cpf, notes, vip } = req.body ?? {};
+  if (name !== undefined && !String(name).trim()) return res.status(400).json({ error: "Nome não pode ficar vazio" });
+  if (phone !== undefined && !String(phone).trim()) return res.status(400).json({ error: "Telefone não pode ficar vazio" });
+  const customer = await prisma.customer.update({
+    where: { id: req.params.id },
+    data: {
+      ...(name !== undefined && { name: String(name).trim() }),
+      ...(phone !== undefined && { phone: String(phone).trim() }),
+      ...(cpf !== undefined && { cpf: cpf || null }),
+      ...(notes !== undefined && { notes: notes || null }),
+      ...(vip !== undefined && { vip: Boolean(vip) }),
+    },
+  });
+  res.json(customer);
 });
 
 customersRouter.post("/", async (req, res) => {

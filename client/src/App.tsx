@@ -10,6 +10,8 @@ import { ClientePerfil } from "./pages/ClientePerfil";
 import { Financeiro } from "./pages/Financeiro";
 import { Estoque } from "./pages/Estoque";
 import { Usuarios } from "./pages/Usuarios";
+import { Crm } from "./pages/Crm";
+import { Acoes } from "./pages/Acoes";
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/clientes" element={<Clientes />} />
+        <Route path="/crm" element={<Crm />} />
+        <Route path="/acoes" element={<Acoes />} />
         <Route path="/clientes/:id" element={<ClientePerfil />} />
         <Route path="/nova-venda" element={<NewSaleWizard />} />
         <Route path="/conserto" element={<Conserto />} />

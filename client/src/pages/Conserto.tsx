@@ -1,18 +1,25 @@
 import { useEffect, useState } from "react";
 import { api, formatCurrency } from "../api";
-import type { DefectOption } from "../types";
-import { PrimaryButton } from "../components/ui";
+import type { CustomerSummary, DefectOption, Repair } from "../types";
+import { Chip, PrimaryButton } from "../components/ui";
+import { WhatsAppComposer } from "../components/WhatsAppComposer";
 
 const MODELS = ["iPhone 12", "iPhone 13", "iPhone 14", "iPhone 14 Pro", "iPhone 15", "iPhone 15 Pro"];
+const REPAIR_STATUSES = ["Recebido", "Em diagnóstico", "Aguardando aprovação", "Em andamento", "Aguardando peça", "Concluído", "Cancelado"];
 
 export function Conserto() {
   const [defectOptions, setDefectOptions] = useState<DefectOption[]>([]);
   const [deadlines, setDeadlines] = useState<string[]>([]);
+  const [customers, setCustomers] = useState<CustomerSummary[]>([]);
+  const [repairs, setRepairs] = useState<Repair[]>([]);
 
   const [model, setModel] = useState(MODELS[0]);
   const [color, setColor] = useState("");
   const [imei, setImei] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [customerId, setCustomerId] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerMode, setCustomerMode] = useState<"existente" | "novo">("existente");
   const [deadlineLabel, setDeadlineLabel] = useState("");
   const [selectedDefects, setSelectedDefects] = useState<Record<string, boolean>>({});
   const [notes, setNotes] = useState("");
@@ -23,6 +30,8 @@ export function Conserto() {
 
   useEffect(() => {
     api.getDefectOptions().then((d) => setDefectOptions(d));
+    api.getCustomers().then(setCustomers);
+    api.getRepairs().then(setRepairs);
     api.getRepairDeadlines().then((d) => {
       setDeadlines(d);
       setDeadlineLabel(d[1] ?? d[0]);
@@ -31,14 +40,16 @@ export function Conserto() {
 
   const chosenDefects = defectOptions.filter((d) => selectedDefects[d.id]);
   const budget = chosenDefects.reduce((s, d) => s + d.price, 0);
-  const canSubmit = customerName.trim().length > 1 && !!deadlineLabel;
+  const canSubmit = customerName.trim().length > 1 && !!deadlineLabel && (customerMode === "existente" ? !!customerId : customerPhone.replace(/\D/g, "").length >= 10);
 
   async function handleSubmit() {
     setSubmitting(true);
     setError(null);
     try {
-      await api.createRepair({
+      const repair = await api.createRepair({
         customerName,
+        customerId: customerId || undefined,
+        customerPhone: customerPhone || undefined,
         model,
         color: color || undefined,
         imei: imei || undefined,
@@ -50,8 +61,11 @@ export function Conserto() {
       setColor("");
       setImei("");
       setCustomerName("");
+      setCustomerId("");
+      setCustomerPhone("");
       setSelectedDefects({});
       setNotes("");
+      setRepairs((current) => [repair, ...current]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro ao registrar aparelho");
     } finally {
@@ -96,9 +110,8 @@ export function Conserto() {
             <Field label="IMEI / número de série">
               <input value={imei} onChange={(e) => setImei(e.target.value)} placeholder="000000000000000" className="input" />
             </Field>
-            <Field label="Nome do cliente">
-              <input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Nome completo" className="input" />
-            </Field>
+            <div className="flex gap-2"><Chip selected={customerMode === "existente"} onClick={() => setCustomerMode("existente")}>Cliente cadastrado</Chip><Chip selected={customerMode === "novo"} onClick={() => { setCustomerMode("novo"); setCustomerId(""); setCustomerName(""); }}>Novo cliente</Chip></div>
+            {customerMode === "existente" ? <Field label="Cliente"><select value={customerId} onChange={(e) => { const selected = customers.find((item) => item.id === e.target.value); setCustomerId(e.target.value); setCustomerName(selected?.name ?? ""); setCustomerPhone(selected?.phone ?? ""); }} className="input bg-white"><option value="">Selecione...</option>{customers.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.phone}</option>)}</select></Field> : <><Field label="Nome do cliente"><input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Nome completo" className="input" /></Field><Field label="Telefone / WhatsApp"><input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="(11) 90000-0000" className="input" /></Field></>}
           </div>
 
           <div className="flex flex-col gap-2.5 rounded-2xl border border-cr-border bg-white p-[18px]">
@@ -170,8 +183,28 @@ export function Conserto() {
           </div>
         </div>
       </div>
+
+      <div className="mt-8 border-t border-cr-border pt-7">
+        <div className="flex items-end justify-between"><div><div className="font-display text-xl font-bold">Acompanhamento de consertos</div><div className="mt-0.5 text-[12px] text-cr-muted">Atualize o status e avise o cliente em cada etapa</div></div><div className="text-[11.5px] font-semibold text-cr-muted">{repairs.filter((item) => !["Concluído", "Cancelado"].includes(item.status)).length} em aberto</div></div>
+        <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
+          {repairs.map((repair) => <RepairCard key={repair.id} repair={repair} onStatus={async (status) => { const updated = await api.updateRepairStatus(repair.id, status); setRepairs((items) => items.map((item) => item.id === repair.id ? { ...item, ...updated } : item)); }} />)}
+          {repairs.length === 0 && <div className="col-span-2 rounded-2xl border border-dashed border-cr-border p-8 text-center text-sm text-cr-muted">Nenhum conserto registrado.</div>}
+        </div>
+      </div>
     </div>
   );
+}
+
+function RepairCard({ repair, onStatus }: { repair: Repair; onStatus: (status: string) => Promise<void> }) {
+  const [updating, setUpdating] = useState(false);
+  const [showWhatsApp, setShowWhatsApp] = useState(false);
+  const recommendedKey = repair.status === "Aguardando aprovação" ? "orcamento_conserto" : repair.status === "Concluído" ? "aparelho_pronto" : "status_conserto";
+  return <div className="rounded-2xl border border-cr-border bg-white p-4">
+    <div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="truncate text-[13px] font-bold">{repair.customerName}</div><div className="mt-0.5 text-[11.5px] text-cr-muted">{repair.model}{repair.color ? ` · ${repair.color}` : ""}</div></div><div className="font-display text-[14px] font-bold">{formatCurrency(repair.estimatedBudget)}</div></div>
+    <div className="mt-3 flex flex-wrap gap-1">{repair.defects.map((defect) => <span key={defect.id} className="rounded-full bg-cr-chip px-2 py-1 text-[9.5px] font-semibold text-cr-secondary">{defect.label}</span>)}</div>
+    <div className="mt-3 flex items-center gap-2 border-t border-cr-border-light pt-3"><select value={repair.status} disabled={updating} onChange={async (e) => { setUpdating(true); await onStatus(e.target.value); setUpdating(false); }} className="input min-w-0 flex-1 bg-white py-2 text-[11.5px]">{REPAIR_STATUSES.map((status) => <option key={status}>{status}</option>)}</select>{repair.customerPhone && repair.customerId ? <button onClick={() => setShowWhatsApp(true)} className="rounded-lg bg-[#25D366] px-3 py-2.5 text-[10.5px] font-bold text-white">WhatsApp</button> : <span className="text-[9.5px] text-cr-muted">Sem telefone</span>}</div>
+    {showWhatsApp && repair.customerPhone && repair.customerId && <WhatsAppComposer customerId={repair.customerId} customerName={repair.customerName} phone={repair.customerPhone} recommendedKey={recommendedKey} variables={{ modelo: repair.model, valor: formatCurrency(repair.estimatedBudget), status: repair.status }} onClose={() => setShowWhatsApp(false)} />}
+  </div>;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {

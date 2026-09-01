@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { api, initials } from "../api";
 import type { StaffUser } from "../types";
 import { Toggle } from "../components/ui";
@@ -14,9 +15,11 @@ const PERMISSIONS: { key: keyof Pick<StaffUser, "vendas" | "conserto" | "cliente
 
 export function Usuarios() {
   const [staff, setStaff] = useState<StaffUser[]>([]);
+  const [showAdd, setShowAdd] = useState(false);
 
+  const load = () => api.getStaff().then(setStaff);
   useEffect(() => {
-    api.getStaff().then(setStaff);
+    load();
   }, []);
 
   const owner = staff.find((s) => s.isOwner);
@@ -38,7 +41,10 @@ export function Usuarios() {
           <div className="font-display text-[22px] font-bold">Usuários e permissões</div>
           <div className="mt-0.5 text-[12.5px] text-cr-muted">Defina o que cada colaborador pode acessar no app</div>
         </div>
-        <button className="flex items-center gap-2 rounded-xl bg-cr-ink px-[18px] py-2.5 text-[13px] font-bold text-white">
+        <button
+          onClick={() => setShowAdd(true)}
+          className="flex items-center gap-2 rounded-xl bg-cr-ink px-[18px] py-2.5 text-[13px] font-bold text-white"
+        >
           + Adicionar colaborador
         </button>
       </div>
@@ -90,6 +96,87 @@ export function Usuarios() {
         </div>
         <div className="text-[11.5px] text-cr-muted">Toque nos interruptores para liberar ou bloquear o acesso de cada colaborador a uma área do app.</div>
       </div>
+
+      {showAdd && (
+        <AddStaffModal
+          onClose={() => setShowAdd(false)}
+          onSaved={() => {
+            setShowAdd(false);
+            load();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function AddStaffModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("Atendente");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      await api.createStaff({ name: name.trim(), role });
+      onSaved();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao adicionar colaborador");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <form onSubmit={submit} className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
+        <div className="flex items-center justify-between">
+          <h2 className="m-0 font-display text-lg font-bold">Adicionar colaborador</h2>
+          <button type="button" onClick={onClose} className="text-xl text-cr-muted">
+            ×
+          </button>
+        </div>
+
+        <label className="mt-4 block text-xs font-semibold text-cr-muted">
+          Nome completo
+          <input
+            autoFocus
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ex: Juliana Alves"
+            className="input mt-1"
+          />
+        </label>
+
+        <label className="mt-3 block text-xs font-semibold text-cr-muted">
+          Cargo
+          <select value={role} onChange={(e) => setRole(e.target.value)} className="input mt-1 bg-white">
+            <option>Atendente</option>
+            <option>Técnico</option>
+            <option>Financeiro</option>
+          </select>
+        </label>
+
+        {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
+
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="rounded-xl border border-cr-border px-4 py-2.5 text-xs font-bold">
+            Cancelar
+          </button>
+          <button disabled={saving || !name.trim()} className="rounded-xl bg-cr-ink px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50">
+            {saving ? "Adicionando..." : "Adicionar"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

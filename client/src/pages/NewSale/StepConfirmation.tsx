@@ -1,5 +1,5 @@
 import { formatCurrency, formatDate } from "../../api";
-import type { ChecklistOption, Device, PaymentFee, Sale, TradeInModel, WarrantyOption } from "../../types";
+import type { ChecklistOption, CrmOpportunity, Device, PaymentFee, Sale, TradeInModel, WarrantyOption } from "../../types";
 import type { CustomerSelection } from "./StepCliente";
 import { PrimaryButton, SecondaryButton } from "../../components/ui";
 
@@ -16,6 +16,7 @@ interface Props {
   submitting: boolean;
   error: string | null;
   result: Sale | null;
+  linkedOpportunity: CrmOpportunity | null;
   onFinalize: () => void;
   onStartNewSale: () => void;
 }
@@ -32,6 +33,7 @@ export function StepConfirmation({
   submitting,
   error,
   result,
+  linkedOpportunity,
   onFinalize,
   onStartNewSale,
 }: Props) {
@@ -67,9 +69,13 @@ export function StepConfirmation({
             </div>
           </div>
 
+          {result.crmOpportunityClosed && <div className="mt-4 rounded-xl bg-cr-bg px-4 py-3 text-[11.5px] text-cr-secondary"><span className="font-bold">CRM atualizado:</span> “{result.crmOpportunityClosed.title}” foi movida para Venda concluída.</div>}
+
           <div className="mt-5 flex gap-2.5">
-            <SecondaryButton className="flex-1">Imprimir comprovante</SecondaryButton>
-            <PrimaryButton onClick={onStartNewSale} className="flex-1">
+            <SecondaryButton className="flex-1 print:hidden" onClick={() => window.print()}>
+              Imprimir comprovante
+            </SecondaryButton>
+            <PrimaryButton onClick={onStartNewSale} className="flex-1 print:hidden">
               Nova venda
             </PrimaryButton>
           </div>
@@ -100,6 +106,8 @@ export function StepConfirmation({
           <span className="font-display text-xl font-bold">{formatCurrency(finalTotal)}</span>
         </div>
       </div>
+
+      {linkedOpportunity && <div className="mt-3 flex items-center gap-3 rounded-xl border border-cr-border bg-white px-4 py-3"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cr-ink text-sm text-white">✓</div><div><div className="text-[11.5px] font-bold">Oportunidade vinculada</div><div className="text-[11px] text-cr-muted">“{linkedOpportunity.title}” será marcada como Venda concluída.</div></div></div>}
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api, formatCurrency } from "../api";
 import type { HomeSummary } from "../types";
 import { Badge, StatCard } from "../components/ui";
@@ -11,11 +11,18 @@ const MONTHS = [
 ];
 
 export function Home() {
+  const navigate = useNavigate();
   const [summary, setSummary] = useState<HomeSummary | null>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     api.getHomeSummary().then(setSummary);
   }, []);
+
+  function submitSearch(event: React.FormEvent) {
+    event.preventDefault();
+    if (search.trim()) navigate(`/clientes?q=${encodeURIComponent(search.trim())}`);
+  }
 
   const now = new Date();
   const dateLabel = `${WEEKDAYS[now.getDay()]}, ${now.getDate()} de ${MONTHS[now.getMonth()]}`;
@@ -27,10 +34,18 @@ export function Home() {
           <div className="font-display text-2xl font-bold">Bom dia, Marcos</div>
           <div className="mt-0.5 text-[13px] capitalize text-cr-muted">{dateLabel}</div>
         </div>
-        <div className="flex w-[260px] items-center gap-2.5 rounded-full border border-cr-border bg-white px-4 py-2.5">
-          <SearchIcon className="h-[15px] w-[15px] text-cr-muted" />
-          <span className="text-[13px] text-cr-muted">Buscar cliente ou IMEI</span>
-        </div>
+        <form
+          onSubmit={submitSearch}
+          className="flex w-[260px] items-center gap-2.5 rounded-full border border-cr-border bg-white px-4 py-2.5"
+        >
+          <SearchIcon className="h-[15px] w-[15px] flex-shrink-0 text-cr-muted" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar cliente por nome ou telefone"
+            className="w-full bg-transparent text-[13px] outline-none placeholder:text-cr-muted"
+          />
+        </form>
       </div>
 
       <div className="mt-6 flex gap-5">
@@ -89,7 +104,7 @@ export function Home() {
                     <div className="flex-[2] text-[13px] text-cr-secondary">{r.detail}</div>
                     <div className="flex-1 text-[13px] font-semibold">{formatCurrency(r.value)}</div>
                     <div className="flex-1 text-right">
-                      <Badge tone={r.status === "Concluído" ? "dark" : "light"}>{r.status}</Badge>
+                      <Badge tone={r.status.includes("concluíd") ? "dark" : "light"}>{r.status}</Badge>
                     </div>
                   </div>
                 ))

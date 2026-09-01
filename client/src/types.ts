@@ -87,6 +87,8 @@ export interface Sale {
   feeValue: number;
   totalToPay: number;
   answers: SaleAnswer[];
+  crmOpportunityId?: string | null;
+  crmOpportunityClosed?: { id: string; title: string } | null;
 }
 
 export interface CustomerSummary {
@@ -115,7 +117,57 @@ export interface CustomerDetail extends CustomerSummary {
   salesCount: number;
   repairsCount: number;
   history: CustomerHistoryItem[];
+  opportunities: CrmOpportunity[];
+  interactions: CrmInteraction[];
+  tasks: CrmTask[];
+  tags: CrmTag[];
 }
+
+export interface CrmTag { id: string; name: string; color: string }
+export interface CrmStaff { id: string; name: string; role: string }
+export interface CrmOpportunity {
+  id: string;
+  title: string;
+  stage: string;
+  pipeline: "vendas" | "assistencia";
+  value: number;
+  source: string | null;
+  notes: string | null;
+  lostReason: string | null;
+  nextActionAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  customerId: string;
+  assignedTo: CrmStaff | null;
+  customer?: CustomerSummary & { tags: CrmTag[] };
+}
+export interface CrmInteraction {
+  id: string;
+  type: string;
+  content: string;
+  createdAt: string;
+  staff: CrmStaff | null;
+}
+export interface CrmTask {
+  id: string;
+  title: string;
+  dueAt: string;
+  completed: boolean;
+  completedAt: string | null;
+  customerId: string;
+  opportunityId: string | null;
+  assignedTo: CrmStaff | null;
+  customer?: Pick<CustomerSummary, "id" | "name" | "phone">;
+  opportunity?: CrmOpportunity | null;
+  automationKey?: string | null;
+}
+export interface CrmActions { overdue: CrmTask[]; today: CrmTask[]; upcoming: CrmTask[] }
+export interface CrmBoard {
+  stages: { key: string; label: string }[];
+  opportunities: CrmOpportunity[];
+  tasks: CrmTask[];
+}
+export interface CrmMessageTemplate { id: string; key: string; name: string; category: string; content: string; active: boolean; order: number }
 
 export interface Repair {
   id: string;
@@ -131,6 +183,9 @@ export interface Repair {
   estimatedBudget: number;
   status: string;
   completedAt: string | null;
+  customerPhone?: string | null;
+  crmOpportunityId?: string | null;
+  crmOpportunityCreated?: { id: string; title: string } | null;
 }
 
 export interface InventoryDevice {

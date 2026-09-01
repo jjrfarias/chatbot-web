@@ -3,6 +3,8 @@ import { NavLink } from "react-router-dom";
 const links = [
   { to: "/", label: "Início", icon: HomeIcon },
   { to: "/clientes", label: "Clientes", icon: ClientsIcon },
+  { to: "/crm", label: "CRM", icon: CrmIcon },
+  { to: "/acoes", label: "Ações de hoje", icon: ActionsIcon },
   { to: "/nova-venda", label: "Nova venda", icon: PhoneIcon },
   { to: "/conserto", label: "Conserto", icon: BoltIcon },
   { to: "/financeiro", label: "Financeiro", icon: FinanceIcon },
@@ -14,7 +16,7 @@ const links = [
 
 export function Sidebar() {
   return (
-    <aside className="flex h-screen w-[220px] flex-shrink-0 flex-col justify-between bg-cr-sidebar px-[18px] py-7">
+    <aside className="flex h-screen w-[220px] flex-shrink-0 flex-col justify-between bg-cr-sidebar px-[18px] py-7 print:hidden">
       <div className="flex flex-col gap-9">
         <div>
           <div className="font-display text-[21px] font-bold text-white">
@@ -78,6 +80,19 @@ function ClientsIcon({ className, active }: IconProps) {
       <path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6" />
     </svg>
   );
+}
+
+function CrmIcon({ className, active }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="2.5" y="3" width="15" height="14" rx="2" />
+      <path d="M7.5 3v14M12.5 3v14M4.5 7h1M9.5 10h1M14.5 6h1" />
+    </svg>
+  );
+}
+
+function ActionsIcon({ className, active }: IconProps) {
+  return <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M4 3.5h12v13H4z" /><path d="m7 8 1.3 1.3L11 6.5M7 13h6" /></svg>;
 }
 
 function PhoneIcon({ className, active }: IconProps) {

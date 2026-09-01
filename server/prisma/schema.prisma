@@ -59,6 +59,84 @@ model Customer {
   createdAt DateTime @default(now())
   sales     Sale[]
   repairs   Repair[]
+  opportunities CrmOpportunity[]
+  interactions CrmInteraction[]
+  tasks     CrmTask[]
+  tags      CustomerTag[]
+}
+
+model CrmOpportunity {
+  id           String    @id @default(cuid())
+  title        String
+  stage        String    @default("novo_lead")
+  pipeline     String    @default("vendas")
+  value        Float     @default(0)
+  source       String?
+  notes        String?
+  lostReason   String?
+  nextActionAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  customerId   String
+  customer     Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  assignedToId String?
+  assignedTo   StaffUser? @relation(fields: [assignedToId], references: [id])
+  tasks        CrmTask[]
+  sale         Sale?
+  repair       Repair?
+}
+
+model CrmInteraction {
+  id         String   @id @default(cuid())
+  type       String
+  content    String
+  createdAt  DateTime @default(now())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  staffId    String?
+  staff      StaffUser? @relation(fields: [staffId], references: [id])
+}
+
+model CrmTask {
+  id            String   @id @default(cuid())
+  title         String
+  dueAt         DateTime
+  completed     Boolean  @default(false)
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  opportunityId String?
+  opportunity   CrmOpportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  assignedToId  String?
+  assignedTo    StaffUser? @relation(fields: [assignedToId], references: [id])
+  automationKey String?  @unique
+}
+
+model CrmTag {
+  id        String @id @default(cuid())
+  name      String @unique
+  color     String @default("#56554f")
+  customers CustomerTag[]
+}
+
+model CustomerTag {
+  customerId String
+  tagId      String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  tag        CrmTag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([customerId, tagId])
+}
+
+model CrmMessageTemplate {
+  id       String  @id @default(cuid())
+  key      String  @unique
+  name     String
+  category String
+  content  String
+  active   Boolean @default(true)
+  order    Int     @default(0)
 }
 
 model Sale {
@@ -97,6 +175,8 @@ model Sale {
   totalToPay    Float
 
   answers SaleTradeInAnswer[]
+  crmOpportunityId String? @unique
+  crmOpportunity   CrmOpportunity? @relation(fields: [crmOpportunityId], references: [id], onDelete: SetNull)
 }
 
 // Snapshot das respostas do checklist para uma venda com troca
@@ -127,6 +207,8 @@ model Repair {
   estimatedBudget  Float
   status           String    @default("Em andamento")
   completedAt      DateTime?
+  crmOpportunityId String? @unique
+  crmOpportunity   CrmOpportunity? @relation(fields: [crmOpportunityId], references: [id], onDelete: SetNull)
 }
 
 // Taxas cobradas por forma de pagamento (editável em Configurações)
@@ -181,4 +263,7 @@ model StaffUser {
   financeiro Boolean @default(false)
   estoque    Boolean @default(false)
   config     Boolean @default(false)
+  opportunities CrmOpportunity[]
+  interactions CrmInteraction[]
+  crmTasks      CrmTask[]
 }

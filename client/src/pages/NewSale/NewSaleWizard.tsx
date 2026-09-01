@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { api, formatCurrency } from "../../api";
-import type { ChecklistOption, Device, PaymentFee, Sale, TradeInModel, WarrantyOption } from "../../types";
+import type { ChecklistOption, CrmOpportunity, Device, PaymentFee, Sale, TradeInModel, WarrantyOption } from "../../types";
 import { WizardStepper } from "../../components/WizardStepper";
 import { StepCliente, type CustomerSelection } from "./StepCliente";
 import { StepModel } from "./StepModel";
@@ -34,11 +34,19 @@ export function NewSaleWizard() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Sale | null>(null);
+  const [linkedOpportunity, setLinkedOpportunity] = useState<CrmOpportunity | null>(null);
 
   useEffect(() => {
     api.getPaymentFees().then(setFees);
     api.getWarrantyOptions().then(setWarrantyOptions);
   }, []);
+
+  useEffect(() => {
+    if (!customer.customerId) { Promise.resolve().then(() => setLinkedOpportunity(null)); return; }
+    api.getCustomer(customer.customerId).then((detail) => {
+      setLinkedOpportunity(detail.opportunities.find((item) => !["venda_concluida", "perdido"].includes(item.stage)) ?? null);
+    });
+  }, [customer.customerId]);
 
   function resetAll() {
     setStep(1);
@@ -51,6 +59,7 @@ export function NewSaleWizard() {
     setPayment(emptyPayment);
     setError(null);
     setResult(null);
+    setLinkedOpportunity(null);
   }
 
   async function handleFinalize() {
@@ -68,6 +77,7 @@ export function NewSaleWizard() {
         checklistAnswers: Object.values(answers).map((a) => a.id),
         warrantyKey: payment.warrantyKey,
         paymentMethod: payment.paymentMethod,
+        opportunityId: linkedOpportunity?.id,
       });
       setResult(sale);
     } catch (e) {
@@ -165,6 +175,7 @@ export function NewSaleWizard() {
           submitting={submitting}
           error={error}
           result={result}
+          linkedOpportunity={linkedOpportunity}
           onFinalize={handleFinalize}
           onStartNewSale={resetAll}
         />

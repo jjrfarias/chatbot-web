@@ -1,17 +1,20 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, formatCurrency, formatDate, initials, maskCpf } from "../api";
 import type { CustomerDetail } from "../types";
 import { Badge } from "../components/ui";
+import { WhatsAppComposer } from "../components/WhatsAppComposer";
 
 export function ClientePerfil() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [customer, setCustomer] = useState<CustomerDetail | null>(null);
+  const [showWhatsApp, setShowWhatsApp] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
 
-  useEffect(() => {
-    if (id) api.getCustomer(id).then(setCustomer);
-  }, [id]);
+  const load = useCallback(() => { if (id) api.getCustomer(id).then(setCustomer); }, [id]);
+  useEffect(load, [load]);
 
   if (!customer) return <div className="px-11 py-8 text-sm text-cr-muted">Carregando...</div>;
 
@@ -52,18 +55,28 @@ export function ClientePerfil() {
 
           <div className="flex flex-col gap-2">
             <button
+              onClick={() => setShowWhatsApp(true)}
+              className="rounded-xl bg-[#25D366] py-3 text-center text-[13px] font-bold text-white"
+            >
+              Conversar no WhatsApp
+            </button>
+            <button
               onClick={() => navigate("/nova-venda", { state: { customerId: customer.id } })}
               className="rounded-xl bg-cr-ink py-3 text-center text-[13px] font-bold text-white"
             >
               Nova venda para este cliente
             </button>
-            <button className="rounded-xl border-[1.6px] border-cr-ink py-3 text-center text-[13px] font-bold text-cr-ink">
+            <button
+              onClick={() => setShowEdit(true)}
+              className="rounded-xl border-[1.6px] border-cr-ink py-3 text-center text-[13px] font-bold text-cr-ink"
+            >
               Editar dados
             </button>
           </div>
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+          <CrmPanel customer={customer} reload={load} />
           <div className="text-sm font-bold">Histórico de atendimentos</div>
           <div className="overflow-hidden rounded-2xl border border-cr-border bg-white">
             {customer.history.length === 0 ? (
@@ -78,7 +91,7 @@ export function ClientePerfil() {
                   <div className="flex-[1.6] text-[12.5px] text-cr-secondary">{formatDate(h.date)}</div>
                   <div className="flex-1 text-[13px] font-semibold">{formatCurrency(h.value)}</div>
                   <div className="flex-1 text-right">
-                    <Badge tone={h.status === "Concluído" ? "dark" : "light"}>{h.status}</Badge>
+                    <Badge tone={h.status.includes("concluíd") ? "dark" : "light"}>{h.status}</Badge>
                   </div>
                 </div>
               ))
@@ -93,6 +106,103 @@ export function ClientePerfil() {
           )}
         </div>
       </div>
+      {showWhatsApp && <WhatsAppComposer customerId={customer.id} customerName={customer.name} phone={customer.phone} recommendedKey="primeiro_contato" onClose={() => setShowWhatsApp(false)} onSent={load} />}
+      {showEdit && (
+        <EditCustomerModal
+          customer={customer}
+          onClose={() => setShowEdit(false)}
+          onSaved={() => {
+            setShowEdit(false);
+            load();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditCustomerModal({
+  customer,
+  onClose,
+  onSaved,
+}: {
+  customer: CustomerDetail;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [name, setName] = useState(customer.name);
+  const [phone, setPhone] = useState(customer.phone);
+  const [cpf, setCpf] = useState(customer.cpf ?? "");
+  const [notes, setNotes] = useState(customer.notes ?? "");
+  const [vip, setVip] = useState(customer.vip);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      await api.updateCustomer(customer.id, {
+        name: name.trim(),
+        phone: phone.trim(),
+        cpf: cpf.trim() || null,
+        notes: notes.trim() || null,
+        vip,
+      });
+      onSaved();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao salvar dados do cliente");
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <form onSubmit={submit} className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
+        <div className="flex items-center justify-between">
+          <h2 className="m-0 font-display text-lg font-bold">Editar dados</h2>
+          <button type="button" onClick={onClose} className="text-xl text-cr-muted">
+            ×
+          </button>
+        </div>
+
+        <label className="mt-4 block text-xs font-semibold text-cr-muted">
+          Nome completo
+          <input required value={name} onChange={(e) => setName(e.target.value)} className="input mt-1" />
+        </label>
+        <label className="mt-3 block text-xs font-semibold text-cr-muted">
+          Telefone
+          <input required value={phone} onChange={(e) => setPhone(e.target.value)} className="input mt-1" />
+        </label>
+        <label className="mt-3 block text-xs font-semibold text-cr-muted">
+          CPF
+          <input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" className="input mt-1" />
+        </label>
+        <label className="mt-3 block text-xs font-semibold text-cr-muted">
+          Observações
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="input mt-1 min-h-20 resize-none" />
+        </label>
+        <label className="mt-3 flex items-center gap-2 text-xs font-semibold text-cr-muted">
+          <input type="checkbox" checked={vip} onChange={(e) => setVip(e.target.checked)} /> Cliente VIP
+        </label>
+
+        {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
+
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="rounded-xl border border-cr-border px-4 py-2.5 text-xs font-bold">
+            Cancelar
+          </button>
+          <button disabled={saving} className="rounded-xl bg-cr-ink px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50">
+            {saving ? "Salvando..." : "Salvar alterações"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
@@ -104,6 +214,54 @@ function MiniStat({ label, value }: { label: string; value: string }) {
       <div className="mt-0.5 font-display text-[19px] font-bold">{value}</div>
     </div>
   );
+}
+
+function CrmPanel({ customer, reload }: { customer: CustomerDetail; reload: () => void }) {
+  const [interaction, setInteraction] = useState("");
+  const [interactionType, setInteractionType] = useState("whatsapp");
+  const [taskTitle, setTaskTitle] = useState("");
+  const [dueAt, setDueAt] = useState("");
+  const [tag, setTag] = useState("");
+
+  async function saveInteraction(event: FormEvent) {
+    event.preventDefault();
+    await api.createInteraction({ customerId: customer.id, type: interactionType, content: interaction });
+    setInteraction(""); reload();
+  }
+  async function saveTask(event: FormEvent) {
+    event.preventDefault();
+    await api.createCrmTask({ customerId: customer.id, title: taskTitle, dueAt });
+    setTaskTitle(""); setDueAt(""); reload();
+  }
+  async function saveTag(event: FormEvent) {
+    event.preventDefault();
+    await api.addCustomerTag(customer.id, tag);
+    setTag(""); reload();
+  }
+
+  return <div className="mb-3 grid grid-cols-2 gap-3">
+    <div className="col-span-2 rounded-2xl border border-cr-border bg-white p-4">
+      <div className="flex items-center justify-between"><div className="text-sm font-bold">Relacionamento</div><div className="flex flex-wrap justify-end gap-1.5">{customer.tags.map((item) => <span key={item.id} className="rounded-full bg-cr-chip px-2.5 py-1 text-[10.5px] font-semibold">{item.name}</span>)}</div></div>
+      <form onSubmit={saveTag} className="mt-3 flex gap-2"><input value={tag} onChange={(e) => setTag(e.target.value)} required className="input" placeholder="Nova etiqueta" /><button className="rounded-lg border border-cr-border px-3 text-xs font-bold">Adicionar</button></form>
+    </div>
+    <form onSubmit={saveInteraction} className="rounded-2xl border border-cr-border bg-white p-4">
+      <div className="text-[12px] font-bold">Registrar contato</div>
+      <select value={interactionType} onChange={(e) => setInteractionType(e.target.value)} className="input mt-3 bg-white"><option value="whatsapp">WhatsApp</option><option value="ligacao">Ligação</option><option value="loja">Atendimento na loja</option><option value="nota">Observação</option></select>
+      <textarea value={interaction} onChange={(e) => setInteraction(e.target.value)} required className="input mt-2 min-h-20 resize-none" placeholder="O que foi conversado?" />
+      <button className="mt-2 rounded-lg bg-cr-ink px-3 py-2 text-[11px] font-bold text-white">Salvar contato</button>
+    </form>
+    <form onSubmit={saveTask} className="rounded-2xl border border-cr-border bg-white p-4">
+      <div className="text-[12px] font-bold">Agendar próxima ação</div>
+      <input value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} required className="input mt-3" placeholder="Ex.: Retornar orçamento" />
+      <input value={dueAt} onChange={(e) => setDueAt(e.target.value)} required type="datetime-local" className="input mt-2" />
+      <button className="mt-2 rounded-lg bg-cr-ink px-3 py-2 text-[11px] font-bold text-white">Criar tarefa</button>
+    </form>
+    {(customer.tasks.length > 0 || customer.interactions.length > 0) && <div className="col-span-2 rounded-2xl border border-cr-border bg-white">
+      <div className="border-b border-cr-border px-4 py-3 text-[12px] font-bold">Atividades recentes</div>
+      {customer.tasks.filter((item) => !item.completed).slice(0, 3).map((item) => <div key={item.id} className="flex items-center gap-2 border-b border-cr-border-light px-4 py-2.5 text-[11.5px]"><button onClick={async () => { await api.updateCrmTask(item.id, true); reload(); }} className="h-4 w-4 rounded border border-cr-muted" /><span className="flex-1 font-semibold">{item.title}</span><span className="text-cr-muted">{formatDate(item.dueAt)}</span></div>)}
+      {customer.interactions.slice(0, 4).map((item) => <div key={item.id} className="border-b border-cr-border-light px-4 py-2.5 last:border-0"><div className="flex justify-between text-[10px] uppercase text-cr-muted"><span>{item.type}</span><span>{formatDate(item.createdAt)}</span></div><div className="mt-1 text-[11.5px] text-cr-secondary">{item.content}</div></div>)}
+    </div>}
+  </div>;
 }
 
 function BackIcon(props: React.SVGProps<SVGSVGElement>) {

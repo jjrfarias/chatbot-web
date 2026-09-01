@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import type { PaymentFee, TradeInModel } from "../types";
+import type { CrmMessageTemplate, PaymentFee, TradeInModel } from "../types";
 import { PrimaryButton } from "../components/ui";
 
 export function Configuracoes() {
   const [fees, setFees] = useState<PaymentFee[]>([]);
   const [models, setModels] = useState<TradeInModel[]>([]);
+  const [templates, setTemplates] = useState<CrmMessageTemplate[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     api.getPaymentFees().then(setFees);
     api.getTradeInModels().then(setModels);
+    api.getMessageTemplates().then(setTemplates);
   }, []);
 
   async function handleSave() {
@@ -21,6 +23,7 @@ export function Configuracoes() {
       await Promise.all([
         api.updatePaymentFees(fees.map((f) => ({ id: f.id, feePercent: f.feePercent }))),
         api.updateTradeInModels(models.map((m) => ({ id: m.id, baseValue: m.baseValue }))),
+        api.updateMessageTemplates(templates.map((item) => ({ id: item.id, content: item.content, active: item.active }))),
       ]);
       setSaved(true);
     } finally {
@@ -33,7 +36,7 @@ export function Configuracoes() {
       <div className="flex items-center justify-between">
         <div>
           <div className="font-display text-xl font-bold">Configurações</div>
-          <div className="mt-0.5 text-[12.5px] text-cr-muted">Taxas de pagamento e valores base de troca</div>
+          <div className="mt-0.5 text-[12.5px] text-cr-muted">Taxas, valores de troca e mensagens de atendimento</div>
         </div>
         <PrimaryButton onClick={handleSave} disabled={saving}>
           {saving ? "Salvando..." : "Salvar alterações"}
@@ -83,6 +86,12 @@ export function Configuracoes() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-cr-border bg-white p-[18px]">
+        <div className="text-sm font-bold">Modelos de mensagem do WhatsApp</div>
+        <div className="mt-1 text-[10.5px] text-cr-muted">Use {`{{nome}}, {{modelo}}, {{valor}} e {{status}}`} para preencher dados automaticamente.</div>
+        <div className="mt-4 grid grid-cols-2 gap-3">{templates.map((item) => <div key={item.id} className="rounded-xl border border-cr-border-light p-3"><div className="flex items-center justify-between"><div><div className="text-[12px] font-bold">{item.name}</div><div className="text-[9.5px] uppercase text-cr-muted">{item.category}</div></div><label className="flex items-center gap-1.5 text-[10.5px] text-cr-muted"><input type="checkbox" checked={item.active} onChange={(e) => setTemplates((current) => current.map((template) => template.id === item.id ? { ...template, active: e.target.checked } : template))} /> Ativo</label></div><textarea value={item.content} onChange={(e) => setTemplates((current) => current.map((template) => template.id === item.id ? { ...template, content: e.target.value } : template))} className="input mt-2 min-h-24 resize-none text-[11.5px] leading-relaxed" /></div>)}</div>
       </div>
     </div>
   );

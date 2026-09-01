@@ -22,7 +22,7 @@ salesRouter.get("/:id", async (req, res) => {
 });
 
 salesRouter.post("/", async (req, res) => {
-  const { customer, deviceId, hasTradeIn, tradeInModelId, checklistAnswers, warrantyKey, paymentMethod } =
+  const { customer, deviceId, hasTradeIn, tradeInModelId, checklistAnswers, warrantyKey, paymentMethod, opportunityId } =
     req.body ?? {};
 
   if (!customer?.name || !customer?.phone) {
@@ -96,6 +96,17 @@ salesRouter.post("/", async (req, res) => {
   const salesCount = await prisma.sale.count();
   const orderNumber = "CR-" + String(8421 + salesCount).padStart(5, "0");
 
+  const openStages = ["novo_lead", "em_atendimento", "aguardando_pagamento", "negociacao"];
+  const opportunity = opportunityId
+    ? await prisma.crmOpportunity.findFirst({ where: { id: opportunityId, customerId: customerRow.id, stage: { in: openStages } } })
+    : await prisma.crmOpportunity.findFirst({
+        where: { customerId: customerRow.id, stage: { in: openStages } },
+        orderBy: { updatedAt: "desc" },
+      });
+  if (opportunityId && !opportunity) {
+    return res.status(400).json({ error: "A oportunidade selecionada não está aberta ou não pertence ao cliente" });
+  }
+
   const sale = await prisma.sale.create({
     data: {
       orderNumber,
@@ -121,6 +132,7 @@ salesRouter.post("/", async (req, res) => {
       feePercent: fee.feePercent,
       feeValue,
       totalToPay,
+      crmOpportunityId: opportunity?.id,
       answers: {
         create: answerRecords,
       },
@@ -128,5 +140,47 @@ salesRouter.post("/", async (req, res) => {
     include: { answers: true },
   });
 
-  res.status(201).json(sale);
+  const closedOpportunity = opportunity ?? await prisma.crmOpportunity.create({
+    data: {
+      customerId: customerRow.id,
+      title: `${device.name} ${device.storage}`,
+      stage: "venda_concluida",
+      value: totalToPay,
+      source: "Venda direta",
+      notes: `Criada automaticamente pela venda ${orderNumber}.`,
+    },
+  });
+
+  if (!opportunity) {
+    await prisma.sale.update({
+      where: { id: sale.id },
+      data: { crmOpportunityId: closedOpportunity.id },
+    });
+  }
+
+  if (closedOpportunity) {
+    await prisma.$transaction([
+      prisma.crmOpportunity.update({
+        where: { id: closedOpportunity.id },
+        data: { stage: "venda_concluida", value: totalToPay, nextActionAt: null, lostReason: null },
+      }),
+      prisma.crmInteraction.create({
+        data: {
+          customerId: customerRow.id,
+          type: "venda",
+          content: `Oportunidade “${closedOpportunity.title}” concluída automaticamente pela venda ${orderNumber}.`,
+        },
+      }),
+      prisma.crmTask.updateMany({
+        where: { opportunityId: closedOpportunity.id, completed: false },
+        data: { completed: true, completedAt: new Date() },
+      }),
+    ]);
+  }
+
+  res.status(201).json({
+    ...sale,
+    crmOpportunityId: closedOpportunity.id,
+    crmOpportunityClosed: { id: closedOpportunity.id, title: closedOpportunity.title },
+  });
 });

@@ -48,7 +48,7 @@ export function StepCliente({ value, onChange, onContinue }: Props) {
         <Chip selected={value.mode === "existente"} onClick={() => onChange({ ...value, mode: "existente" })}>
           Cliente já cadastrado
         </Chip>
-        <Chip selected={value.mode === "novo"} onClick={() => onChange({ ...value, mode: "novo" })}>
+        <Chip selected={value.mode === "novo"} onClick={() => onChange({ mode: "novo", customerId: null, name: "", phone: "", cpf: "" })}>
           Novo cliente
         </Chip>
       </div>
