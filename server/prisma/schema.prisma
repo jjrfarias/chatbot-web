@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Catálogo de aparelhos novos disponíveis para venda
+model Device {
+  id        String   @id @default(cuid())
+  name      String
+  storage   String
+  price     Float
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  sales     Sale[]
+}
+
+// Catálogo de modelos usados aceitos na troca, com valor base
+model TradeInModel {
+  id        String   @id @default(cuid())
+  name      String
+  baseValue Float
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  sales     Sale[]
+}
+
+// Categorias do checklist de avaliação (Tela, Bateria, etc.)
+model ChecklistCategory {
+  id      String            @id @default(cuid())
+  key     String            @unique
+  label   String
+  order   Int               @default(0)
+  options ChecklistOption[]
+}
+
+// Opções de estado para cada categoria, com o desconto correspondente
+model ChecklistOption {
+  id         String            @id @default(cuid())
+  categoryId String
+  category   ChecklistCategory @relation(fields: [categoryId], references: [id])
+  label      String
+  deduction  Float             @default(0)
+  order      Int               @default(0)
+  answers    SaleTradeInAnswer[]
+}
+
+model Sale {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  customerName  String
+  customerPhone String
+
+  deviceId    String
+  device      Device @relation(fields: [deviceId], references: [id])
+  deviceName  String
+  devicePrice Float
+
+  hasTradeIn        Boolean       @default(false)
+  tradeInModelId    String?
+  tradeInModel      TradeInModel? @relation(fields: [tradeInModelId], references: [id])
+  tradeInModelName  String?
+  tradeInBaseValue  Float?
+  tradeInDeductions Float         @default(0)
+  tradeInFinalValue Float         @default(0)
+
+  paymentMethod String
+  installments  Int    @default(1)
+  totalToPay    Float
+
+  answers SaleTradeInAnswer[]
+}
+
+// Snapshot das respostas do checklist para uma venda com troca
+model SaleTradeInAnswer {
+  id         String @id @default(cuid())
+  saleId     String
+  sale       Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  categoryId String
+  categoryLabel String
+  optionId   String
+  option     ChecklistOption @relation(fields: [optionId], references: [id])
+  optionLabel   String
+  deduction     Float
+}

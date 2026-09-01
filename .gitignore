@@ -1,0 +1,18 @@
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Server
+server/.env
+server/prisma/dev.db
+server/prisma/dev.db-journal
+server/node_modules/
+
+# Client
+client/node_modules/
+client/e2e.mjs
+
+# Editors/OS
+.DS_Store
+*.log
