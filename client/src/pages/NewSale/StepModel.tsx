@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, formatCurrency } from "../../api";
 import type { Device } from "../../types";
+import { PrimaryButton } from "../../components/ui";
 
 interface Props {
   selected: Device | null;
@@ -19,43 +20,81 @@ export function StepModel({ selected, onSelect, onContinue }: Props) {
       .finally(() => setLoading(false));
   }, []);
 
+  const grouped = Object.values(
+    devices.reduce<Record<string, Device[]>>((acc, d) => {
+      const key = `${d.name}__${d.color}`;
+      (acc[key] ??= []).push(d);
+      return acc;
+    }, {}),
+  );
+
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-black">Qual aparelho o cliente está comprando?</h1>
+      <h1 className="font-display text-xl font-bold">Qual iPhone o cliente deseja levar?</h1>
 
       {loading ? (
-        <p className="mt-6 text-sm text-stone-500">Carregando catálogo...</p>
+        <p className="mt-6 text-sm text-cr-muted">Carregando catálogo...</p>
       ) : (
-        <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-          {devices.map((d) => (
-            <button
-              key={d.id}
-              type="button"
-              onClick={() => onSelect(d)}
-              className={`rounded-2xl border bg-white p-5 text-left transition-shadow hover:shadow-sm ${
-                selected?.id === d.id ? "border-black ring-1 ring-black" : "border-stone-200"
-              }`}
-            >
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stone-100">
-                <PhoneGlyph />
+        <div className="mt-6 grid grid-cols-3 gap-4">
+          {grouped.map((variants) => {
+            const first = variants[0];
+            const isGroupSelected = selected && selected.name === first.name && selected.color === first.color;
+            const active = isGroupSelected ? selected! : first;
+            const cheapest = [...variants].sort((a, b) => a.price - b.price)[0];
+            return (
+              <div
+                key={`${first.name}-${first.color}`}
+                className={`flex flex-col gap-3 rounded-2xl bg-white p-[18px] ${
+                  isGroupSelected ? "border-[1.6px] border-cr-ink" : "border-[1.6px] border-cr-border"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-cr-chip">
+                    <PhoneGlyph />
+                  </div>
+                  <div
+                    className={`h-4 w-4 rounded-full border-[1.6px] ${isGroupSelected ? "border-cr-ink bg-cr-ink" : "border-cr-dot"}`}
+                  />
+                </div>
+                <div>
+                  <div className="text-[14.5px] font-bold">{first.name}</div>
+                  <div className="mt-0.5 text-xs text-cr-muted">{first.color}</div>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {variants.map((v) => (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => onSelect(v)}
+                      className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                        selected?.id === v.id
+                          ? "border-[1.4px] border-cr-ink bg-cr-ink text-white"
+                          : "border-[1.4px] border-cr-border bg-white text-cr-secondary"
+                      }`}
+                    >
+                      {v.storage}
+                    </button>
+                  ))}
+                </div>
+                <div className="font-display text-[17px] font-bold">
+                  {isGroupSelected ? formatCurrency(active.price) : `a partir de ${formatCurrency(cheapest.price)}`}
+                </div>
               </div>
-              <div className="mt-3 font-medium text-black">{d.name}</div>
-              <div className="text-sm text-stone-500">{d.storage}</div>
-              <div className="mt-1 text-sm font-medium text-stone-700">{formatCurrency(d.price)}</div>
-            </button>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      <div className="mt-10 flex justify-end">
-        <button
-          type="button"
-          disabled={!selected}
-          onClick={onContinue}
-          className="rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-30"
-        >
+      <div className="mt-10 flex items-center justify-between border-t border-cr-border pt-[18px]">
+        <div>
+          <div className="text-[11.5px] font-semibold uppercase tracking-wide text-cr-muted">Selecionado</div>
+          <div className="mt-0.5 font-display text-lg font-bold">
+            {selected ? `${selected.name} · ${selected.storage} — ${formatCurrency(selected.price)}` : "Nenhum aparelho selecionado"}
+          </div>
+        </div>
+        <PrimaryButton disabled={!selected} onClick={onContinue}>
           Continuar →
-        </button>
+        </PrimaryButton>
       </div>
     </div>
   );
@@ -63,9 +102,9 @@ export function StepModel({ selected, onSelect, onContinue }: Props) {
 
 function PhoneGlyph() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} className="h-4 w-4 text-stone-500">
-      <rect x="7" y="2.5" width="10" height="19" rx="2" />
-      <path d="M11 18.5h2" strokeLinecap="round" />
+    <svg viewBox="0 0 20 20" fill="none" stroke="#121210" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+      <rect x="6" y="2" width="8" height="16" rx="1.8" />
+      <path d="M9 15.2h2" />
     </svg>
   );
 }

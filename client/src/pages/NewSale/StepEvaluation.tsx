@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, formatCurrency } from "../../api";
 import type { ChecklistCategory, ChecklistOption, TradeInModel } from "../../types";
+import { PrimaryButton } from "../../components/ui";
 
 interface Props {
   tradeInModel: TradeInModel;
@@ -25,30 +26,30 @@ export function StepEvaluation({ tradeInModel, answers, onAnswer, onContinue }: 
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-black">Checklist de avaliação do aparelho</h1>
+      <h1 className="font-display text-xl font-bold">Checklist de avaliação do aparelho</h1>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_280px]">
+        <div className="grid grid-cols-2 gap-3">
           {categories.map((category) => {
             const selected = answers[category.id];
             return (
-              <div key={category.id} className="rounded-2xl border border-stone-200 bg-white p-5">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-medium text-black">{category.label}</span>
-                  <span className="text-sm text-stone-400">
+              <div key={category.id} className="flex flex-col gap-2 rounded-[14px] border border-cr-border bg-white p-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[12.5px] font-bold">{category.label}</span>
+                  <span className={`text-[11px] font-bold ${selected?.deduction ? "text-cr-ink" : "text-cr-muted"}`}>
                     {selected && selected.deduction > 0 ? `-${formatCurrency(selected.deduction)}` : ""}
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {category.options.map((option) => (
                     <button
                       key={option.id}
                       type="button"
                       onClick={() => onAnswer(category.id, option)}
-                      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
                         selected?.id === option.id
-                          ? "bg-black text-white"
-                          : "border border-stone-200 bg-white text-stone-600 hover:border-stone-300"
+                          ? "border-[1.3px] border-cr-ink bg-cr-ink text-white"
+                          : "border-[1.3px] border-cr-border bg-white text-cr-secondary"
                       }`}
                     >
                       {option.label}
@@ -60,18 +61,20 @@ export function StepEvaluation({ tradeInModel, answers, onAnswer, onContinue }: 
           })}
         </div>
 
-        <aside className="h-fit rounded-2xl border border-stone-200 bg-white p-5">
-          <div className="text-xs font-medium uppercase tracking-wide text-stone-400">Aparelho avaliado</div>
-          <div className="mt-1 font-medium text-black">{tradeInModel.name}</div>
-          <div className="text-sm text-stone-500">Valor base: {formatCurrency(tradeInModel.baseValue)}</div>
+        <aside className="flex h-fit flex-col gap-3 rounded-2xl border border-cr-border bg-white p-[18px]">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-cr-muted">Aparelho avaliado</div>
+            <div className="mt-0.5 text-[14.5px] font-bold">{tradeInModel.name}</div>
+            <div className="text-[11.5px] text-cr-muted">Valor base: {formatCurrency(tradeInModel.baseValue)}</div>
+          </div>
 
-          <div className="mt-4 space-y-2 border-t border-stone-100 pt-4 text-sm">
+          <div className="flex flex-col border-t border-cr-border-light">
             {categories.map((category) => {
               const selected = answers[category.id];
               return (
-                <div key={category.id} className="flex justify-between text-stone-600">
-                  <span>{category.label}</span>
-                  <span className={selected?.deduction ? "text-black" : "text-stone-300"}>
+                <div key={category.id} className="flex justify-between border-b border-cr-border-light py-[7px] text-[11.5px]">
+                  <span className="text-cr-secondary">{category.label}</span>
+                  <span className={selected?.deduction ? "font-bold" : "font-medium text-cr-muted"}>
                     {selected ? (selected.deduction > 0 ? `-${formatCurrency(selected.deduction)}` : "—") : "—"}
                   </span>
                 </div>
@@ -79,23 +82,20 @@ export function StepEvaluation({ tradeInModel, answers, onAnswer, onContinue }: 
             })}
           </div>
 
-          <div className="mt-4 flex justify-between border-t border-stone-100 pt-4 text-sm text-stone-600">
-            <span>Total de descontos</span>
-            <span>-{formatCurrency(totalDeductions)}</span>
-          </div>
-          <div className="mt-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-black">Valor da troca</span>
-            <span className="text-xl font-semibold text-black">{formatCurrency(finalValue)}</span>
+          <div className="flex flex-col gap-1 pt-0.5">
+            <div className="flex justify-between text-xs text-cr-muted">
+              <span>Total de descontos</span>
+              <span className="font-bold text-cr-ink">-{formatCurrency(totalDeductions)}</span>
+            </div>
+            <div className="mt-1.5 flex items-center justify-between border-t border-cr-ink pt-1.5">
+              <span className="text-[13.5px] font-bold">Valor da troca</span>
+              <span className="font-display text-xl font-bold">{formatCurrency(finalValue)}</span>
+            </div>
           </div>
 
-          <button
-            type="button"
-            disabled={!allAnswered}
-            onClick={() => onContinue(finalValue)}
-            className="mt-5 w-full rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-30"
-          >
+          <PrimaryButton disabled={!allAnswered} onClick={() => onContinue(finalValue)} className="mt-1 w-full">
             Continuar
-          </button>
+          </PrimaryButton>
         </aside>
       </div>
     </div>

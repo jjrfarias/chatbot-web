@@ -1,37 +1,48 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { api, formatCurrency } from "../../api";
-import type { ChecklistOption, Device, Sale, TradeInModel } from "../../types";
+import type { ChecklistOption, Device, PaymentFee, Sale, TradeInModel, WarrantyOption } from "../../types";
 import { WizardStepper } from "../../components/WizardStepper";
+import { StepCliente, type CustomerSelection } from "./StepCliente";
 import { StepModel } from "./StepModel";
 import { StepTradeIn } from "./StepTradeIn";
 import { StepEvaluation } from "./StepEvaluation";
 import { StepPayment, type PaymentInfo } from "./StepPayment";
 import { StepConfirmation } from "./StepConfirmation";
 
-const emptyPayment: PaymentInfo = {
-  customerName: "",
-  customerPhone: "",
-  paymentMethod: "",
-  installments: 1,
-};
+const emptyCustomer: CustomerSelection = { mode: "existente", customerId: null, name: "", phone: "", cpf: "" };
+const emptyPayment: PaymentInfo = { paymentMethod: "", warrantyKey: "padrao" };
 
 export function NewSaleWizard() {
-  const [step, setStep] = useState(1);
+  const location = useLocation();
+  const preselectedCustomerId = (location.state as { customerId?: string } | null)?.customerId;
 
+  const [step, setStep] = useState(1);
+  const [customer, setCustomer] = useState<CustomerSelection>(
+    preselectedCustomerId ? { ...emptyCustomer, customerId: preselectedCustomerId } : emptyCustomer,
+  );
   const [device, setDevice] = useState<Device | null>(null);
   const [hasTradeIn, setHasTradeIn] = useState<boolean | null>(null);
   const [tradeInModel, setTradeInModel] = useState<TradeInModel | null>(null);
   const [answers, setAnswers] = useState<Record<string, ChecklistOption>>({});
   const [tradeInValue, setTradeInValue] = useState(0);
   const [payment, setPayment] = useState<PaymentInfo>(emptyPayment);
+  const [totals, setTotals] = useState({ feePercent: 0, feeValue: 0, finalTotal: 0 });
+  const [fees, setFees] = useState<PaymentFee[]>([]);
+  const [warrantyOptions, setWarrantyOptions] = useState<WarrantyOption[]>([]);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Sale | null>(null);
 
+  useEffect(() => {
+    api.getPaymentFees().then(setFees);
+    api.getWarrantyOptions().then(setWarrantyOptions);
+  }, []);
+
   function resetAll() {
     setStep(1);
+    setCustomer(emptyCustomer);
     setDevice(null);
     setHasTradeIn(null);
     setTradeInModel(null);
@@ -48,14 +59,15 @@ export function NewSaleWizard() {
     setError(null);
     try {
       const sale = await api.createSale({
-        customerName: payment.customerName,
-        customerPhone: payment.customerPhone,
+        customer: customer.customerId
+          ? { id: customer.customerId, name: customer.name, phone: customer.phone }
+          : { name: customer.name, phone: customer.phone, cpf: customer.cpf || undefined },
         deviceId: device.id,
         hasTradeIn: !!hasTradeIn,
         tradeInModelId: tradeInModel?.id,
         checklistAnswers: Object.values(answers).map((a) => a.id),
+        warrantyKey: payment.warrantyKey,
         paymentMethod: payment.paymentMethod,
-        installments: payment.installments,
       });
       setResult(sale);
     } catch (e) {
@@ -65,18 +77,25 @@ export function NewSaleWizard() {
     }
   }
 
-  const breadcrumb = device ? `${device.name} ${device.storage} · ${formatCurrency(device.price)}` : "Nova venda";
+  const breadcrumb =
+    step === 1
+      ? "Voltar ao início"
+      : step === 2
+        ? `Cliente: ${customer.name || "—"}`
+        : device
+          ? `${device.name} ${device.storage} · ${formatCurrency(device.price)}`
+          : "Nova venda";
 
   return (
-    <div className="mx-auto max-w-5xl px-8 py-8">
-      <div className="mb-6 flex items-center gap-2 text-sm text-stone-400">
+    <div className="mx-auto max-w-5xl px-11 py-8">
+      <div className="mb-6 flex items-center gap-2 text-[12.5px] font-semibold text-cr-muted">
         {step > 1 ? (
-          <button type="button" onClick={() => setStep((s) => Math.max(1, s - 1))} className="hover:text-stone-600">
+          <button type="button" onClick={() => setStep((s) => Math.max(1, s - 1))} className="hover:text-cr-secondary">
             ← {breadcrumb}
           </button>
         ) : (
-          <Link to="/" className="hover:text-stone-600">
-            ← Voltar
+          <Link to="/" className="hover:text-cr-secondary">
+            ← {breadcrumb}
           </Link>
         )}
       </div>
@@ -85,11 +104,11 @@ export function NewSaleWizard() {
         <WizardStepper current={step} />
       </div>
 
-      {step === 1 && (
-        <StepModel selected={device} onSelect={setDevice} onContinue={() => setStep(2)} />
-      )}
+      {step === 1 && <StepCliente value={customer} onChange={setCustomer} onContinue={() => setStep(2)} />}
 
-      {step === 2 && (
+      {step === 2 && <StepModel selected={device} onSelect={setDevice} onContinue={() => setStep(3)} />}
+
+      {step === 3 && (
         <StepTradeIn
           hasTradeIn={hasTradeIn}
           onSetHasTradeIn={(v) => {
@@ -102,40 +121,47 @@ export function NewSaleWizard() {
           }}
           selected={tradeInModel}
           onSelect={setTradeInModel}
-          onContinue={() => setStep(hasTradeIn ? 3 : 4)}
+          onContinue={() => setStep(hasTradeIn ? 4 : 5)}
         />
       )}
 
-      {step === 3 && tradeInModel && (
+      {step === 4 && tradeInModel && (
         <StepEvaluation
           tradeInModel={tradeInModel}
           answers={answers}
           onAnswer={(categoryId, option) => setAnswers((prev) => ({ ...prev, [categoryId]: option }))}
           onContinue={(finalValue) => {
             setTradeInValue(finalValue);
-            setStep(4);
+            setStep(5);
           }}
         />
       )}
 
-      {step === 4 && device && (
+      {step === 5 && device && (
         <StepPayment
           device={device}
           tradeInModel={hasTradeIn ? tradeInModel : null}
           tradeInValue={hasTradeIn ? tradeInValue : 0}
           info={payment}
           onChange={setPayment}
-          onContinue={() => setStep(5)}
+          onContinue={(t) => {
+            setTotals(t);
+            setStep(6);
+          }}
         />
       )}
 
-      {step === 5 && device && (
+      {step === 6 && device && (
         <StepConfirmation
+          customer={customer}
           device={device}
           tradeInModel={hasTradeIn ? tradeInModel : null}
           tradeInValue={hasTradeIn ? tradeInValue : 0}
           answers={answers}
-          payment={payment}
+          paymentMethod={payment.paymentMethod}
+          warranty={warrantyOptions.find((w) => w.key === payment.warrantyKey)}
+          fee={fees.find((f) => f.key === payment.paymentMethod)}
+          finalTotal={totals.finalTotal}
           submitting={submitting}
           error={error}
           result={result}

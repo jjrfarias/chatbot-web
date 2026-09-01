@@ -1,78 +1,134 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, formatCurrency } from "../api";
-import type { Sale, SalesStats } from "../types";
+import type { HomeSummary } from "../types";
+import { Badge, StatCard } from "../components/ui";
+
+const WEEKDAYS = ["domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"];
+const MONTHS = [
+  "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+  "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+];
 
 export function Home() {
-  const [stats, setStats] = useState<SalesStats | null>(null);
-  const [recent, setRecent] = useState<Sale[]>([]);
+  const [summary, setSummary] = useState<HomeSummary | null>(null);
 
   useEffect(() => {
-    api.getStats().then(setStats);
-    api.getSales().then((sales) => setRecent(sales.slice(0, 5)));
+    api.getHomeSummary().then(setSummary);
   }, []);
 
-  return (
-    <div className="mx-auto max-w-5xl px-8 py-8">
-      <h1 className="text-2xl font-semibold text-black">Início</h1>
-      <p className="mt-1 text-sm text-stone-500">Visão geral da loja e ações rápidas.</p>
+  const now = new Date();
+  const dateLabel = `${WEEKDAYS[now.getDay()]}, ${now.getDate()} de ${MONTHS[now.getMonth()]}`;
 
-      <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatCard label="Vendas (mês)" value={String(stats?.salesThisMonth ?? "—")} />
-        <StatCard label="Faturamento (mês)" value={stats ? formatCurrency(stats.revenueThisMonth) : "—"} />
-        <StatCard label="Vendas (total)" value={String(stats?.totalSales ?? "—")} />
-        <StatCard label="Faturamento (total)" value={stats ? formatCurrency(stats.totalRevenue) : "—"} />
+  return (
+    <div className="mx-auto max-w-5xl px-11 py-9">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="font-display text-2xl font-bold">Bom dia, Marcos</div>
+          <div className="mt-0.5 text-[13px] capitalize text-cr-muted">{dateLabel}</div>
+        </div>
+        <div className="flex w-[260px] items-center gap-2.5 rounded-full border border-cr-border bg-white px-4 py-2.5">
+          <SearchIcon className="h-[15px] w-[15px] text-cr-muted" />
+          <span className="text-[13px] text-cr-muted">Buscar cliente ou IMEI</span>
+        </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mt-6 flex gap-5">
         <Link
           to="/nova-venda"
-          className="rounded-2xl border border-stone-200 bg-white p-5 transition-shadow hover:shadow-sm"
+          className="flex flex-1 flex-col gap-3.5 rounded-2xl border border-cr-border bg-white p-[22px] transition-shadow hover:shadow-sm"
         >
-          <div className="font-medium text-black">Nova venda</div>
-          <div className="mt-1 text-sm text-stone-500">Vender um aparelho novo, com ou sem troca.</div>
+          <div className="flex items-center justify-between">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cr-ink">
+              <PhoneIcon className="h-5 w-5 text-white" />
+            </div>
+            <ArrowIcon className="h-[18px] w-[18px] text-cr-muted" />
+          </div>
+          <div>
+            <div className="font-display text-[17px] font-bold">Nova venda</div>
+            <div className="mt-0.5 text-[12.5px] text-cr-muted">Venda de iPhone, com ou sem troca de aparelho</div>
+          </div>
         </Link>
         <Link
           to="/conserto"
-          className="rounded-2xl border border-stone-200 bg-white p-5 transition-shadow hover:shadow-sm"
+          className="flex flex-1 flex-col gap-3.5 rounded-2xl border border-cr-border bg-white p-[22px] transition-shadow hover:shadow-sm"
         >
-          <div className="font-medium text-black">Novo conserto</div>
-          <div className="mt-1 text-sm text-stone-500">Abrir uma ordem de serviço de assistência técnica.</div>
+          <div className="flex items-center justify-between">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cr-ink">
+              <BoltIcon className="h-5 w-5 text-white" />
+            </div>
+            <ArrowIcon className="h-[18px] w-[18px] text-cr-muted" />
+          </div>
+          <div>
+            <div className="font-display text-[17px] font-bold">Novo conserto</div>
+            <div className="mt-0.5 text-[12.5px] text-cr-muted">Receber aparelho e registrar defeitos</div>
+          </div>
         </Link>
       </div>
 
-      <div className="mt-8">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-medium text-black">Vendas recentes</h2>
-          <Link to="/historico" className="text-sm text-stone-500 hover:text-stone-800">
-            Ver histórico →
-          </Link>
-        </div>
-        <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
-          {recent.length === 0 ? (
-            <p className="p-5 text-sm text-stone-400">Nenhuma venda registrada ainda.</p>
-          ) : (
-            recent.map((sale) => (
-              <div key={sale.id} className="flex items-center justify-between border-b border-stone-100 px-5 py-3 last:border-0">
-                <div>
-                  <div className="text-sm font-medium text-black">{sale.customerName}</div>
-                  <div className="text-xs text-stone-500">{sale.deviceName}</div>
-                </div>
-                <div className="text-sm font-medium text-black">{formatCurrency(sale.totalToPay)}</div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+      {summary && (
+        <>
+          <div className="mt-5 flex gap-5">
+            <StatCard label="Vendas hoje" value={summary.vendasHoje} />
+            <StatCard label="Consertos em andamento" value={summary.consertosAndamento} />
+            <StatCard label="Ticket médio" value={formatCurrency(summary.ticketMedio)} />
+          </div>
+
+          <div className="mt-6 flex flex-col gap-2.5">
+            <div className="text-sm font-bold">Atendimentos recentes</div>
+            <div className="overflow-hidden rounded-[14px] border border-cr-border bg-white">
+              {summary.recentes.length === 0 ? (
+                <p className="p-5 text-sm text-cr-muted">Nenhum atendimento registrado ainda.</p>
+              ) : (
+                summary.recentes.map((r, i) => (
+                  <div key={i} className="flex items-center border-b border-cr-border-light px-[18px] py-3.5 last:border-0 hover:bg-cr-bg">
+                    <div className="flex-[2] text-[13px] font-semibold">{r.name}</div>
+                    <div className="flex-1">
+                      <Badge>{r.type}</Badge>
+                    </div>
+                    <div className="flex-[2] text-[13px] text-cr-secondary">{r.detail}</div>
+                    <div className="flex-1 text-[13px] font-semibold">{formatCurrency(r.value)}</div>
+                    <div className="flex-1 text-right">
+                      <Badge tone={r.status === "Concluído" ? "dark" : "light"}>{r.status}</Badge>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function SearchIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4">
-      <div className="text-xs text-stone-500">{label}</div>
-      <div className="mt-1 text-lg font-semibold text-black">{value}</div>
-    </div>
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" {...props}>
+      <circle cx="9" cy="9" r="6" />
+      <path d="m17 17-4-4" />
+    </svg>
+  );
+}
+function PhoneIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="6" y="2" width="8" height="16" rx="1.8" />
+      <path d="M9 15.2h2" />
+    </svg>
+  );
+}
+function BoltIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M11 2.5 5 11h4l-1 6.5 7-9.5h-4l0-5.5Z" />
+    </svg>
+  );
+}
+function ArrowIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M8 5l5 5-5 5" />
+    </svg>
   );
 }

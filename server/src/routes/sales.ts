@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../db";
+import { WARRANTY_OPTIONS } from "../constants";
 
 export const salesRouter = Router();
 
@@ -9,24 +10,6 @@ salesRouter.get("/", async (_req, res) => {
     include: { answers: true },
   });
   res.json(sales);
-});
-
-salesRouter.get("/stats", async (_req, res) => {
-  const [count, sales] = await Promise.all([
-    prisma.sale.count(),
-    prisma.sale.findMany({ select: { totalToPay: true, createdAt: true } }),
-  ]);
-  const revenue = sales.reduce((sum, s) => sum + s.totalToPay, 0);
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
-  const salesThisMonth = sales.filter((s) => s.createdAt >= startOfMonth);
-  res.json({
-    totalSales: count,
-    totalRevenue: revenue,
-    salesThisMonth: salesThisMonth.length,
-    revenueThisMonth: salesThisMonth.reduce((sum, s) => sum + s.totalToPay, 0),
-  });
 });
 
 salesRouter.get("/:id", async (req, res) => {
@@ -39,18 +22,10 @@ salesRouter.get("/:id", async (req, res) => {
 });
 
 salesRouter.post("/", async (req, res) => {
-  const {
-    customerName,
-    customerPhone,
-    deviceId,
-    hasTradeIn,
-    tradeInModelId,
-    checklistAnswers,
-    paymentMethod,
-    installments,
-  } = req.body ?? {};
+  const { customer, deviceId, hasTradeIn, tradeInModelId, checklistAnswers, warrantyKey, paymentMethod } =
+    req.body ?? {};
 
-  if (!customerName || !customerPhone) {
+  if (!customer?.name || !customer?.phone) {
     return res.status(400).json({ error: "Nome e telefone do cliente são obrigatórios" });
   }
   if (!deviceId) {
@@ -62,6 +37,21 @@ salesRouter.post("/", async (req, res) => {
 
   const device = await prisma.device.findUnique({ where: { id: deviceId } });
   if (!device) return res.status(404).json({ error: "Aparelho não encontrado" });
+
+  const fee = await prisma.paymentFee.findUnique({ where: { key: paymentMethod } });
+  if (!fee) return res.status(400).json({ error: "Forma de pagamento inválida" });
+
+  const warranty = WARRANTY_OPTIONS.find((w) => w.key === warrantyKey) ?? WARRANTY_OPTIONS[0];
+
+  let customerRow;
+  if (customer.id) {
+    customerRow = await prisma.customer.findUnique({ where: { id: customer.id } });
+    if (!customerRow) return res.status(404).json({ error: "Cliente não encontrado" });
+  } else {
+    customerRow = await prisma.customer.create({
+      data: { name: customer.name, phone: customer.phone, cpf: customer.cpf || null },
+    });
+  }
 
   let tradeInModel = null;
   let tradeInDeductions = 0;
@@ -95,14 +85,26 @@ salesRouter.post("/", async (req, res) => {
     tradeInFinalValue = Math.max(0, tradeInModel.baseValue - tradeInDeductions);
   }
 
-  const totalToPay = Math.max(0, device.price - tradeInFinalValue);
+  const installmentsMatch = /^credito(\d+)x$/.exec(paymentMethod);
+  const installments = installmentsMatch ? Number(installmentsMatch[1]) : 1;
+
+  const diff = Math.max(0, device.price - tradeInFinalValue);
+  const base = diff + warranty.price;
+  const feeValue = base * (fee.feePercent / 100);
+  const totalToPay = base + feeValue;
+
+  const salesCount = await prisma.sale.count();
+  const orderNumber = "CR-" + String(8421 + salesCount).padStart(5, "0");
 
   const sale = await prisma.sale.create({
     data: {
-      customerName,
-      customerPhone,
+      orderNumber,
+      customerId: customerRow.id,
+      customerName: customerRow.name,
+      customerPhone: customerRow.phone,
       deviceId: device.id,
-      deviceName: `${device.name} ${device.storage}`,
+      deviceName: device.name,
+      deviceColor: device.color,
       devicePrice: device.price,
       hasTradeIn: Boolean(hasTradeIn),
       tradeInModelId: tradeInModel?.id,
@@ -110,8 +112,14 @@ salesRouter.post("/", async (req, res) => {
       tradeInBaseValue: tradeInModel?.baseValue,
       tradeInDeductions,
       tradeInFinalValue,
-      paymentMethod,
-      installments: installments && installments > 0 ? installments : 1,
+      warrantyKey: warranty.key,
+      warrantyLabel: warranty.label,
+      warrantyPrice: warranty.price,
+      paymentMethod: fee.key,
+      paymentLabel: fee.label,
+      installments,
+      feePercent: fee.feePercent,
+      feeValue,
       totalToPay,
       answers: {
         create: answerRecords,

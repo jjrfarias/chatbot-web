@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, formatCurrency } from "../../api";
 import type { TradeInModel } from "../../types";
+import { Chip, PrimaryButton } from "../../components/ui";
 
 interface Props {
   hasTradeIn: boolean | null;
@@ -21,63 +22,46 @@ export function StepTradeIn({ hasTradeIn, onSetHasTradeIn, selected, onSelect, o
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-black">O cliente vai dar um iPhone na troca?</h1>
+      <h1 className="font-display text-xl font-bold">O cliente vai dar um iPhone na troca?</h1>
 
-      <div className="mt-6 flex gap-3">
-        <button
-          type="button"
-          onClick={() => onSetHasTradeIn(true)}
-          className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
-            hasTradeIn === true ? "bg-black text-white" : "border border-stone-200 bg-white text-stone-600"
-          }`}
-        >
+      <div className="mt-4 flex gap-2.5">
+        <Chip selected={hasTradeIn === true} onClick={() => onSetHasTradeIn(true)}>
           ✓ Sim, vai dar um aparelho
-        </button>
-        <button
-          type="button"
-          onClick={() => onSetHasTradeIn(false)}
-          className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
-            hasTradeIn === false ? "bg-black text-white" : "border border-stone-200 bg-white text-stone-600"
-          }`}
-        >
+        </Chip>
+        <Chip selected={hasTradeIn === false} onClick={() => onSetHasTradeIn(false)}>
           ✕ Não, só a venda
-        </button>
+        </Chip>
       </div>
 
       {hasTradeIn && (
-        <div className="mt-8">
-          <div className="mb-3 text-sm font-medium text-stone-600">Qual o modelo do aparelho usado?</div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="mt-6">
+          <div className="mb-3 text-sm font-semibold text-cr-secondary">Qual o modelo do aparelho usado?</div>
+          <div className="grid grid-cols-4 gap-4">
             {models.map((m) => (
               <button
                 key={m.id}
                 type="button"
                 onClick={() => onSelect(m)}
-                className={`rounded-2xl border bg-white p-5 text-left transition-shadow hover:shadow-sm ${
-                  selected?.id === m.id ? "border-black ring-1 ring-black" : "border-stone-200"
+                className={`rounded-2xl bg-white p-[18px] text-left transition-shadow ${
+                  selected?.id === m.id ? "border-[1.6px] border-cr-ink" : "border-[1.6px] border-cr-border"
                 }`}
               >
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stone-100">
+                <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-cr-chip">
                   <PhoneGlyph />
                 </div>
-                <div className="mt-3 font-medium text-black">{m.name}</div>
-                <div className="text-sm text-stone-500">até {formatCurrency(m.baseValue)}</div>
+                <div className="mt-3 text-[14.5px] font-bold">{m.name}</div>
+                <div className="text-xs text-cr-muted">até {formatCurrency(m.baseValue)}</div>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      <div className="mt-10 flex items-center justify-between">
-        <p className="text-sm text-stone-500">O valor final da troca é calculado na próxima etapa, de acordo com o estado do aparelho.</p>
-        <button
-          type="button"
-          disabled={!canContinue}
-          onClick={onContinue}
-          className="rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-30"
-        >
+      <div className="mt-10 flex items-center justify-between border-t border-cr-border pt-[18px]">
+        <p className="text-[12.5px] text-cr-muted">O valor final da troca é calculado na próxima etapa, de acordo com o estado do aparelho.</p>
+        <PrimaryButton disabled={!canContinue} onClick={onContinue}>
           Continuar →
-        </button>
+        </PrimaryButton>
       </div>
     </div>
   );
@@ -85,9 +69,9 @@ export function StepTradeIn({ hasTradeIn, onSetHasTradeIn, selected, onSelect, o
 
 function PhoneGlyph() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} className="h-4 w-4 text-stone-500">
-      <rect x="7" y="2.5" width="10" height="19" rx="2" />
-      <path d="M11 18.5h2" strokeLinecap="round" />
+    <svg viewBox="0 0 20 20" fill="none" stroke="#121210" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+      <rect x="6" y="2" width="8" height="16" rx="1.8" />
+      <path d="M9 15.2h2" />
     </svg>
   );
 }

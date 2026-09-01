@@ -1,6 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-sans: 'Manrope', sans-serif;
+
+  --color-cr-bg: #f6f5f2;
+  --color-cr-sidebar: #0d0d0c;
+  --color-cr-sidebar-hover: #1d1d1a;
+  --color-cr-sidebar-muted: #9a998f;
+  --color-cr-sidebar-border: #232320;
+  --color-cr-ink: #121210;
+  --color-cr-muted: #8c8a83;
+  --color-cr-secondary: #56554f;
+  --color-cr-border: #e1dfd8;
+  --color-cr-border-light: #efeee9;
+  --color-cr-chip: #efeee9;
+  --color-cr-chip-alt: #f1efe8;
+  --color-cr-placeholder: #b1afa7;
+  --color-cr-dot: #d8d6cd;
+}
 
 body {
   margin: 0;
-  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Manrope', sans-serif;
+  background: #f6f5f2;
+  color: #121210;
+}
+
+::placeholder {
+  color: #b1afa7;
+}
+
+.input {
+  border: 1.4px solid #e1dfd8;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #121210;
+  outline: none;
+  font-family: 'Manrope', sans-serif;
+  width: 100%;
+}
+.input:focus {
+  border-color: #121210;
 }

@@ -11,6 +11,7 @@ datasource db {
 model Device {
   id        String   @id @default(cuid())
   name      String
+  color     String
   storage   String
   price     Float
   active    Boolean  @default(true)
@@ -39,25 +40,41 @@ model ChecklistCategory {
 
 // Opções de estado para cada categoria, com o desconto correspondente
 model ChecklistOption {
-  id         String            @id @default(cuid())
+  id         String              @id @default(cuid())
   categoryId String
-  category   ChecklistCategory @relation(fields: [categoryId], references: [id])
+  category   ChecklistCategory   @relation(fields: [categoryId], references: [id])
   label      String
-  deduction  Float             @default(0)
-  order      Int               @default(0)
+  deduction  Float               @default(0)
+  order      Int                 @default(0)
   answers    SaleTradeInAnswer[]
 }
 
-model Sale {
+model Customer {
   id        String   @id @default(cuid())
+  name      String
+  phone     String
+  cpf       String?
+  notes     String?
+  vip       Boolean  @default(false)
   createdAt DateTime @default(now())
+  sales     Sale[]
+  repairs   Repair[]
+}
 
+model Sale {
+  id          String   @id @default(cuid())
+  orderNumber String
+  createdAt   DateTime @default(now())
+
+  customerId    String?
+  customer      Customer? @relation(fields: [customerId], references: [id])
   customerName  String
   customerPhone String
 
   deviceId    String
   device      Device @relation(fields: [deviceId], references: [id])
   deviceName  String
+  deviceColor String
   devicePrice Float
 
   hasTradeIn        Boolean       @default(false)
@@ -68,8 +85,15 @@ model Sale {
   tradeInDeductions Float         @default(0)
   tradeInFinalValue Float         @default(0)
 
+  warrantyKey   String @default("padrao")
+  warrantyLabel String @default("Padrão CR SMART · 3 meses")
+  warrantyPrice Float  @default(0)
+
   paymentMethod String
+  paymentLabel  String
   installments  Int    @default(1)
+  feePercent    Float  @default(0)
+  feeValue      Float  @default(0)
   totalToPay    Float
 
   answers SaleTradeInAnswer[]
@@ -77,13 +101,84 @@ model Sale {
 
 // Snapshot das respostas do checklist para uma venda com troca
 model SaleTradeInAnswer {
-  id         String @id @default(cuid())
-  saleId     String
-  sale       Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  categoryId String
+  id            String          @id @default(cuid())
+  saleId        String
+  sale          Sale            @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  categoryId    String
   categoryLabel String
-  optionId   String
-  option     ChecklistOption @relation(fields: [optionId], references: [id])
+  optionId      String
+  option        ChecklistOption @relation(fields: [optionId], references: [id])
   optionLabel   String
   deduction     Float
+}
+
+model Repair {
+  id               String    @id @default(cuid())
+  createdAt        DateTime  @default(now())
+  customerId       String?
+  customer         Customer? @relation(fields: [customerId], references: [id])
+  customerName     String
+  model            String
+  color            String?
+  imei             String?
+  deadlineLabel    String
+  defectsJson      String
+  notes            String?
+  estimatedBudget  Float
+  status           String    @default("Em andamento")
+  completedAt      DateTime?
+}
+
+// Taxas cobradas por forma de pagamento (editável em Configurações)
+model PaymentFee {
+  id         String @id @default(cuid())
+  key        String @unique
+  label      String
+  feePercent Float
+  order      Int    @default(0)
+}
+
+model InventoryDevice {
+  id          String   @id @default(cuid())
+  name        String
+  storage     String
+  color       String
+  condition   String
+  quantity    Int
+  minQuantity Int      @default(3)
+  costPrice   Float
+  salePrice   Float
+  createdAt   DateTime @default(now())
+}
+
+model InventoryPart {
+  id          String   @id @default(cuid())
+  name        String
+  compatible  String
+  quantity    Int
+  minQuantity Int      @default(4)
+  supplier    String
+  costPrice   Float
+  createdAt   DateTime @default(now())
+}
+
+model Expense {
+  id            String   @id @default(cuid())
+  date          DateTime @default(now())
+  description   String
+  paymentMethod String
+  amount        Float
+}
+
+model StaffUser {
+  id         String  @id @default(cuid())
+  name       String
+  role       String
+  isOwner    Boolean @default(false)
+  vendas     Boolean @default(false)
+  conserto   Boolean @default(false)
+  clientes   Boolean @default(false)
+  financeiro Boolean @default(false)
+  estoque    Boolean @default(false)
+  config     Boolean @default(false)
 }

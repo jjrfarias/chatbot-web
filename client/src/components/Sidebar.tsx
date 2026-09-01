@@ -2,99 +2,144 @@ import { NavLink } from "react-router-dom";
 
 const links = [
   { to: "/", label: "Início", icon: HomeIcon },
+  { to: "/clientes", label: "Clientes", icon: ClientsIcon },
   { to: "/nova-venda", label: "Nova venda", icon: PhoneIcon },
   { to: "/conserto", label: "Conserto", icon: BoltIcon },
+  { to: "/financeiro", label: "Financeiro", icon: FinanceIcon },
+  { to: "/estoque", label: "Estoque", icon: StockIcon },
+  { to: "/usuarios", label: "Usuários", icon: UsersIcon },
   { to: "/historico", label: "Histórico", icon: ClockIcon },
   { to: "/configuracoes", label: "Configurações", icon: GearIcon },
 ];
 
 export function Sidebar() {
   return (
-    <aside className="flex h-screen w-56 flex-shrink-0 flex-col bg-black text-stone-300">
-      <div className="px-5 pt-6 pb-5">
-        <div className="text-lg font-semibold text-white">
-          CR <span className="text-stone-400">SMART</span>
+    <aside className="flex h-screen w-[220px] flex-shrink-0 flex-col justify-between bg-cr-sidebar px-[18px] py-7">
+      <div className="flex flex-col gap-9">
+        <div>
+          <div className="font-display text-[21px] font-bold text-white">
+            CR <span className="font-normal text-cr-sidebar-muted">SMART</span>
+          </div>
+          <div className="mt-[3px] text-[11px] text-[#6f6e68]">Vendas &amp; Assistência iPhone</div>
         </div>
-        <div className="mt-0.5 text-xs text-stone-500">Vendas &amp; Assistência iPhone</div>
+
+        <nav className="flex flex-col gap-1">
+          {links.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === "/"}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-[10px] px-3 py-[11px] text-[13.5px] transition-colors hover:bg-cr-sidebar-hover ${
+                  isActive ? "bg-cr-sidebar-hover font-semibold text-white" : "font-medium text-cr-sidebar-muted"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <Icon className="h-[18px] w-[18px] flex-shrink-0" active={isActive} />
+                  {label}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3">
-        {links.map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === "/"}
-            className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                isActive
-                  ? "bg-white/10 font-medium text-white"
-                  : "text-stone-400 hover:bg-white/5 hover:text-stone-200"
-              }`
-            }
-          >
-            <Icon className="h-4 w-4 flex-shrink-0" />
-            {label}
-          </NavLink>
-        ))}
-      </nav>
-
-      <div className="flex items-center gap-3 border-t border-white/10 px-4 py-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-700 text-xs font-semibold text-white">
-          AT
+      <div className="flex items-center gap-2.5 border-t border-cr-sidebar-border px-2.5 py-2.5">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cr-sidebar-border font-display text-xs font-semibold text-white">
+          MS
         </div>
-        <div>
-          <div className="text-sm font-medium text-white">Atendente</div>
-          <div className="text-xs text-stone-500">Loja</div>
+        <div className="flex flex-col leading-tight">
+          <span className="text-[12.5px] font-semibold text-white">Marcos Silva</span>
+          <span className="text-[11px] text-[#6f6e68]">Admin</span>
         </div>
       </div>
     </aside>
   );
 }
 
-function HomeIcon(props: React.SVGProps<SVGSVGElement>) {
+type IconProps = { className?: string; active?: boolean };
+const stroke = (active?: boolean) => (active ? "#ffffff" : "#9a998f");
+
+function HomeIcon({ className, active }: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} {...props}>
-      <path d="M3 11.5 12 4l9 7.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M3 9.5 10 3l7 6.5" />
+      <path d="M5 8.5V17h10V8.5" />
     </svg>
   );
 }
 
-function PhoneIcon(props: React.SVGProps<SVGSVGElement>) {
+function ClientsIcon({ className, active }: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} {...props}>
-      <rect x="7" y="2.5" width="10" height="19" rx="2" />
-      <path d="M11 18.5h2" strokeLinecap="round" />
+    <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="10" cy="7" r="3" />
+      <path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6" />
     </svg>
   );
 }
 
-function BoltIcon(props: React.SVGProps<SVGSVGElement>) {
+function PhoneIcon({ className, active }: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} {...props}>
-      <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="6" y="2.5" width="8" height="15" rx="1.6" />
+      <path d="M9 15h2" />
     </svg>
   );
 }
 
-function ClockIcon(props: React.SVGProps<SVGSVGElement>) {
+function BoltIcon({ className, active }: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} {...props}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3.5 2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M11 2.5 5 11h4l-1 6.5 7-9.5h-4l0-5.5Z" />
     </svg>
   );
 }
 
-function GearIcon(props: React.SVGProps<SVGSVGElement>) {
+function FinanceIcon({ className, active }: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} {...props}>
-      <circle cx="12" cy="12" r="3" />
-      <path
-        d="M19.4 13.5c.1-.5.1-1 0-1.5l1.6-1.2-1.5-2.6-1.9.6a7.6 7.6 0 0 0-1.3-.8l-.3-2H10l-.3 2a7.6 7.6 0 0 0-1.3.8l-1.9-.6-1.5 2.6L6.6 12c-.1.5-.1 1 0 1.5L5 14.7l1.5 2.6 1.9-.6c.4.3.8.6 1.3.8l.3 2h4l.3-2c.5-.2.9-.5 1.3-.8l1.9.6 1.5-2.6-1.6-1.2Z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M3 6h14M3 10h14M3 14h9" />
+      <circle cx="15.5" cy="14.5" r="2.3" />
+    </svg>
+  );
+}
+
+function StockIcon({ className, active }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M3 7 10 3l7 4v7l-7 4-7-4Z" />
+      <path d="M3 7l7 4 7-4M10 11v6" />
+    </svg>
+  );
+}
+
+function UsersIcon({ className, active }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="7" cy="7" r="3" />
+      <path d="M2 17c0-2.8 2.2-5 5-5s5 2.2 5 5" />
+      <circle cx="15" cy="8" r="2.3" />
+      <path d="M13.3 11a4 4 0 0 1 4.7 4" />
+    </svg>
+  );
+}
+
+function ClockIcon({ className, active }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="10" cy="10" r="7" />
+      <path d="M10 6v4l3 2" />
+    </svg>
+  );
+}
+
+function GearIcon({ className, active }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="10" cy="10" r="2.6" />
+      <path d="M10 2.8v2.1M10 15.1v2.1M17.2 10h-2.1M4.9 10H2.8M15.1 4.9l-1.5 1.5M6.4 13.6l-1.5 1.5M15.1 15.1l-1.5-1.5M6.4 6.4 4.9 4.9" />
     </svg>
   );
 }
