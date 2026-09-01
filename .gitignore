@@ -9,6 +9,9 @@ server/prisma/dev.db
 server/prisma/dev.db-journal
 server/node_modules/
 
+# Backups (contain real customer data, never commit)
+backups/
+
 # Client
 client/node_modules/
 client/e2e.mjs
