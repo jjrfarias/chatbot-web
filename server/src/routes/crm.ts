@@ -24,25 +24,34 @@ export const REPAIR_STAGES = [
 const stageKeys: string[] = [...CRM_STAGES, ...REPAIR_STAGES].map((stage) => stage.key);
 
 const DEFAULT_TEMPLATES = [
-  { key: "primeiro_contato", name: "Primeiro contato", category: "Vendas", order: 1, content: "Olá, {{nome}}! Tudo bem? Aqui é da CR Smart. Como podemos ajudar?" },
+  { key: "primeiro_contato", name: "Primeiro contato", category: "Vendas", order: 1, content: "Olá, {{nome}}! Tudo bem? Aqui é da loja. Como podemos ajudar?" },
   { key: "retorno_negociacao", name: "Retorno da negociação", category: "Vendas", order: 2, content: "Olá, {{nome}}! Estou retornando sobre o {{modelo}}. Ficou alguma dúvida para concluirmos sua compra?" },
   { key: "pagamento_pendente", name: "Pagamento pendente", category: "Vendas", order: 3, content: "Olá, {{nome}}! Seu {{modelo}} está reservado. Posso ajudar com a finalização do pagamento?" },
   { key: "orcamento_conserto", name: "Orçamento do conserto", category: "Assistência", order: 4, content: "Olá, {{nome}}! O orçamento do seu {{modelo}} ficou em {{valor}}. Podemos prosseguir com o reparo?" },
   { key: "status_conserto", name: "Atualização do conserto", category: "Assistência", order: 5, content: "Olá, {{nome}}! Atualização sobre seu {{modelo}}: o status atual é {{status}}." },
-  { key: "aparelho_pronto", name: "Aparelho pronto", category: "Assistência", order: 6, content: "Olá, {{nome}}! Seu {{modelo}} está pronto para retirada na CR Smart." },
-  { key: "pos_venda", name: "Pós-venda", category: "Relacionamento", order: 7, content: "Olá, {{nome}}! Passando para saber se está tudo certo com seu {{modelo}}. Conte com a CR Smart!" },
+  { key: "aparelho_pronto", name: "Aparelho pronto", category: "Assistência", order: 6, content: "Olá, {{nome}}! Seu {{modelo}} está pronto para retirada." },
+  { key: "pos_venda", name: "Pós-venda", category: "Relacionamento", order: 7, content: "Olá, {{nome}}! Passando para saber se está tudo certo com seu {{modelo}}." },
 ];
 
-async function ensureTemplates() {
-  await Promise.all(DEFAULT_TEMPLATES.map((item) => prisma.crmMessageTemplate.upsert({ where: { key: item.key }, create: item, update: {} })));
+async function ensureTemplates(storeId: string) {
+  await Promise.all(
+    DEFAULT_TEMPLATES.map((item) =>
+      prisma.crmMessageTemplate.upsert({
+        where: { storeId_key: { storeId, key: item.key } },
+        create: { ...item, storeId },
+        update: {},
+      }),
+    ),
+  );
 }
 
-async function generateAutomatedTasks() {
+async function generateAutomatedTasks(storeId: string) {
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000);
   const staleLimit = new Date(now.getTime() - 3 * 86400000);
   const opportunities = await prisma.crmOpportunity.findMany({
     where: {
+      storeId,
       OR: [
         { stage: { in: ["aguardando_pagamento", "aguardando_aprovacao"] } },
         { stage: { in: ["novo_lead", "em_atendimento", "negociacao", "recebido", "diagnostico", "em_reparo"] }, updatedAt: { lt: staleLimit } },
@@ -60,16 +69,16 @@ async function generateAutomatedTasks() {
     if (opportunity.stage === "venda_concluida" && opportunity.sale) { kind = "pos_venda"; title = `Pós-venda: ${opportunity.title}`; dueAt = new Date(opportunity.sale.createdAt.getTime() + 3 * 86400000); }
     await prisma.crmTask.upsert({
       where: { automationKey: `${kind}:${opportunity.id}` },
-      create: { automationKey: `${kind}:${opportunity.id}`, customerId: opportunity.customerId, opportunityId: opportunity.id, assignedToId: opportunity.assignedToId, title, dueAt },
+      create: { storeId, automationKey: `${kind}:${opportunity.id}`, customerId: opportunity.customerId, opportunityId: opportunity.id, assignedToId: opportunity.assignedToId, title, dueAt },
       update: {},
     });
   }
 }
 
-crmRouter.get("/actions/today", async (_req, res) => {
-  await generateAutomatedTasks();
+crmRouter.get("/actions/today", async (req, res) => {
+  await generateAutomatedTasks(req.storeId);
   const tasks = await prisma.crmTask.findMany({
-    where: { completed: false },
+    where: { storeId: req.storeId, completed: false },
     include: { customer: true, assignedTo: true, opportunity: true },
     orderBy: { dueAt: "asc" },
   });
@@ -83,36 +92,47 @@ crmRouter.get("/actions/today", async (_req, res) => {
   });
 });
 
-crmRouter.get("/message-templates", async (_req, res) => {
-  await ensureTemplates();
-  res.json(await prisma.crmMessageTemplate.findMany({ orderBy: { order: "asc" } }));
+crmRouter.get("/message-templates", async (req, res) => {
+  await ensureTemplates(req.storeId);
+  res.json(await prisma.crmMessageTemplate.findMany({ where: { storeId: req.storeId }, orderBy: { order: "asc" } }));
 });
 
 crmRouter.put("/message-templates", async (req, res) => {
   const templates = Array.isArray(req.body?.templates) ? req.body.templates : [];
-  await prisma.$transaction(templates.map((item: { id: string; content: string; active: boolean }) => prisma.crmMessageTemplate.update({ where: { id: item.id }, data: { content: item.content, active: Boolean(item.active) } })));
-  res.json(await prisma.crmMessageTemplate.findMany({ orderBy: { order: "asc" } }));
+  await prisma.$transaction(
+    templates.map((item: { id: string; content: string; active: boolean }) =>
+      prisma.crmMessageTemplate.updateMany({
+        where: { id: item.id, storeId: req.storeId },
+        data: { content: item.content, active: Boolean(item.active) },
+      }),
+    ),
+  );
+  res.json(await prisma.crmMessageTemplate.findMany({ where: { storeId: req.storeId }, orderBy: { order: "asc" } }));
 });
 
 crmRouter.post("/whatsapp/open", async (req, res) => {
   const { customerId, phone, message, templateName } = req.body ?? {};
   if (!customerId || !phone || !message?.trim()) return res.status(400).json({ error: "Cliente, telefone e mensagem são obrigatórios" });
+  const customer = await prisma.customer.findFirst({ where: { id: customerId, storeId: req.storeId } });
+  if (!customer) return res.status(404).json({ error: "Cliente não encontrado" });
   const digits = String(phone).replace(/\D/g, "").replace(/^55/, "");
-  await prisma.crmInteraction.create({ data: { customerId, type: "whatsapp", content: `${templateName ? `${templateName}: ` : ""}${message.trim()}` } });
+  await prisma.crmInteraction.create({
+    data: { storeId: req.storeId, customerId, type: "whatsapp", content: `${templateName ? `${templateName}: ` : ""}${message.trim()}` },
+  });
   res.json({ url: `https://wa.me/55${digits}?text=${encodeURIComponent(message.trim())}` });
 });
 
-crmRouter.get("/board", async (_req, res) => {
-  const pipeline = _req.query.pipeline === "assistencia" ? "assistencia" : "vendas";
+crmRouter.get("/board", async (req, res) => {
+  const pipeline = req.query.pipeline === "assistencia" ? "assistencia" : "vendas";
   const stages = pipeline === "assistencia" ? REPAIR_STAGES : CRM_STAGES;
   const [opportunities, tasks] = await Promise.all([
     prisma.crmOpportunity.findMany({
-      where: { pipeline },
+      where: { storeId: req.storeId, pipeline },
       include: { customer: { include: { tags: { include: { tag: true } } } }, assignedTo: true },
       orderBy: { updatedAt: "desc" },
     }),
     prisma.crmTask.findMany({
-      where: { completed: false },
+      where: { storeId: req.storeId, completed: false },
       include: { customer: true, assignedTo: true },
       orderBy: { dueAt: "asc" },
       take: 8,
@@ -135,8 +155,13 @@ crmRouter.post("/opportunities", async (req, res) => {
   const { customerId, title, stage, pipeline, value, source, notes, nextActionAt, assignedToId } = req.body ?? {};
   if (!customerId || !title) return res.status(400).json({ error: "Cliente e título são obrigatórios" });
   if (stage && !stageKeys.includes(stage)) return res.status(400).json({ error: "Etapa inválida" });
+
+  const customer = await prisma.customer.findFirst({ where: { id: customerId, storeId: req.storeId } });
+  if (!customer) return res.status(404).json({ error: "Cliente não encontrado" });
+
   const opportunity = await prisma.crmOpportunity.create({
     data: {
+      storeId: req.storeId,
       customerId,
       title,
       stage: stage || "novo_lead",
@@ -155,6 +180,10 @@ crmRouter.post("/opportunities", async (req, res) => {
 crmRouter.patch("/opportunities/:id", async (req, res) => {
   const { stage, title, value, source, notes, lostReason, nextActionAt, assignedToId } = req.body ?? {};
   if (stage && !stageKeys.includes(stage)) return res.status(400).json({ error: "Etapa inválida" });
+
+  const existing = await prisma.crmOpportunity.findFirst({ where: { id: req.params.id, storeId: req.storeId } });
+  if (!existing) return res.status(404).json({ error: "Oportunidade não encontrada" });
+
   const opportunity = await prisma.crmOpportunity.update({
     where: { id: req.params.id },
     data: {
@@ -185,7 +214,7 @@ crmRouter.patch("/opportunities/:id", async (req, res) => {
         data: { status: repairStatus, completedAt: stage === "servico_concluido" ? new Date() : null },
       });
       await prisma.crmInteraction.create({
-        data: { customerId: opportunity.customerId, type: "conserto", content: `Status do conserto atualizado para ${repairStatus}.` },
+        data: { storeId: req.storeId, customerId: opportunity.customerId, type: "conserto", content: `Status do conserto atualizado para ${repairStatus}.` },
       });
     }
   }
@@ -195,8 +224,12 @@ crmRouter.patch("/opportunities/:id", async (req, res) => {
 crmRouter.post("/interactions", async (req, res) => {
   const { customerId, type, content, staffId } = req.body ?? {};
   if (!customerId || !type || !content?.trim()) return res.status(400).json({ error: "Cliente, tipo e conteúdo são obrigatórios" });
+
+  const customer = await prisma.customer.findFirst({ where: { id: customerId, storeId: req.storeId } });
+  if (!customer) return res.status(404).json({ error: "Cliente não encontrado" });
+
   const interaction = await prisma.crmInteraction.create({
-    data: { customerId, type, content: content.trim(), staffId: staffId || null },
+    data: { storeId: req.storeId, customerId, type, content: content.trim(), staffId: staffId || null },
     include: { staff: true },
   });
   res.status(201).json(interaction);
@@ -205,8 +238,12 @@ crmRouter.post("/interactions", async (req, res) => {
 crmRouter.post("/tasks", async (req, res) => {
   const { customerId, title, dueAt, opportunityId, assignedToId } = req.body ?? {};
   if (!customerId || !title?.trim() || !dueAt) return res.status(400).json({ error: "Cliente, tarefa e prazo são obrigatórios" });
+
+  const customer = await prisma.customer.findFirst({ where: { id: customerId, storeId: req.storeId } });
+  if (!customer) return res.status(404).json({ error: "Cliente não encontrado" });
+
   const task = await prisma.crmTask.create({
-    data: { customerId, title: title.trim(), dueAt: new Date(dueAt), opportunityId: opportunityId || null, assignedToId: assignedToId || null },
+    data: { storeId: req.storeId, customerId, title: title.trim(), dueAt: new Date(dueAt), opportunityId: opportunityId || null, assignedToId: assignedToId || null },
     include: { assignedTo: true },
   });
   res.status(201).json(task);
@@ -214,6 +251,9 @@ crmRouter.post("/tasks", async (req, res) => {
 
 crmRouter.patch("/tasks/:id", async (req, res) => {
   const completed = Boolean(req.body?.completed);
+  const existing = await prisma.crmTask.findFirst({ where: { id: req.params.id, storeId: req.storeId } });
+  if (!existing) return res.status(404).json({ error: "Tarefa não encontrada" });
+
   const task = await prisma.crmTask.update({
     where: { id: req.params.id },
     data: { completed, completedAt: completed ? new Date() : null },
@@ -224,8 +264,16 @@ crmRouter.patch("/tasks/:id", async (req, res) => {
 crmRouter.post("/customers/:customerId/tags", async (req, res) => {
   const name = String(req.body?.name || "").trim();
   if (!name) return res.status(400).json({ error: "Nome da etiqueta é obrigatório" });
+
+  const customer = await prisma.customer.findFirst({ where: { id: req.params.customerId, storeId: req.storeId } });
+  if (!customer) return res.status(404).json({ error: "Cliente não encontrado" });
+
   const color = req.body?.color || "#56554f";
-  const tag = await prisma.crmTag.upsert({ where: { name }, create: { name, color }, update: {} });
+  const tag = await prisma.crmTag.upsert({
+    where: { storeId_name: { storeId: req.storeId, name } },
+    create: { storeId: req.storeId, name, color },
+    update: {},
+  });
   await prisma.customerTag.upsert({
     where: { customerId_tagId: { customerId: req.params.customerId, tagId: tag.id } },
     create: { customerId: req.params.customerId, tagId: tag.id },

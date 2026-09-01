@@ -7,9 +7,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Uma loja/cliente do SaaS. Todo o resto dos dados pertence a uma Store.
+model Store {
+  id           String   @id @default(cuid())
+  name         String
+  tagline      String?
+  logoUrl      String?
+  primaryColor String?
+  address      String?
+  phone        String?
+  createdAt    DateTime @default(now())
+
+  staff               StaffUser[]
+  devices             Device[]
+  tradeInModels       TradeInModel[]
+  checklistCategories ChecklistCategory[]
+  paymentFees         PaymentFee[]
+  customers           Customer[]
+  sales               Sale[]
+  repairs             Repair[]
+  inventoryDevices    InventoryDevice[]
+  inventoryParts      InventoryPart[]
+  expenses            Expense[]
+  crmOpportunities    CrmOpportunity[]
+  crmInteractions     CrmInteraction[]
+  crmTasks            CrmTask[]
+  crmTags             CrmTag[]
+  crmMessageTemplates CrmMessageTemplate[]
+}
+
 // Catálogo de aparelhos novos disponíveis para venda
 model Device {
   id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   name      String
   color     String
   storage   String
@@ -22,6 +53,8 @@ model Device {
 // Catálogo de modelos usados aceitos na troca, com valor base
 model TradeInModel {
   id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   name      String
   baseValue Float
   active    Boolean  @default(true)
@@ -32,17 +65,21 @@ model TradeInModel {
 // Categorias do checklist de avaliação (Tela, Bateria, etc.)
 model ChecklistCategory {
   id      String            @id @default(cuid())
-  key     String            @unique
+  storeId String
+  store   Store             @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  key     String
   label   String
   order   Int               @default(0)
   options ChecklistOption[]
+
+  @@unique([storeId, key])
 }
 
 // Opções de estado para cada categoria, com o desconto correspondente
 model ChecklistOption {
   id         String              @id @default(cuid())
   categoryId String
-  category   ChecklistCategory   @relation(fields: [categoryId], references: [id])
+  category   ChecklistCategory   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   label      String
   deduction  Float               @default(0)
   order      Int                 @default(0)
@@ -50,23 +87,27 @@ model ChecklistOption {
 }
 
 model Customer {
-  id        String   @id @default(cuid())
-  name      String
-  phone     String
-  cpf       String?
-  notes     String?
-  vip       Boolean  @default(false)
-  createdAt DateTime @default(now())
-  sales     Sale[]
-  repairs   Repair[]
+  id            String   @id @default(cuid())
+  storeId       String
+  store         Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name          String
+  phone         String
+  cpf           String?
+  notes         String?
+  vip           Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  sales         Sale[]
+  repairs       Repair[]
   opportunities CrmOpportunity[]
-  interactions CrmInteraction[]
-  tasks     CrmTask[]
-  tags      CustomerTag[]
+  interactions  CrmInteraction[]
+  tasks         CrmTask[]
+  tags          CustomerTag[]
 }
 
 model CrmOpportunity {
   id           String    @id @default(cuid())
+  storeId      String
+  store        Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
   title        String
   stage        String    @default("novo_lead")
   pipeline     String    @default("vendas")
@@ -88,6 +129,8 @@ model CrmOpportunity {
 
 model CrmInteraction {
   id         String   @id @default(cuid())
+  storeId    String
+  store      Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   type       String
   content    String
   createdAt  DateTime @default(now())
@@ -99,6 +142,8 @@ model CrmInteraction {
 
 model CrmTask {
   id            String   @id @default(cuid())
+  storeId       String
+  store         Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   title         String
   dueAt         DateTime
   completed     Boolean  @default(false)
@@ -115,9 +160,13 @@ model CrmTask {
 
 model CrmTag {
   id        String @id @default(cuid())
-  name      String @unique
+  storeId   String
+  store     Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name      String
   color     String @default("#56554f")
   customers CustomerTag[]
+
+  @@unique([storeId, name])
 }
 
 model CustomerTag {
@@ -131,16 +180,22 @@ model CustomerTag {
 
 model CrmMessageTemplate {
   id       String  @id @default(cuid())
-  key      String  @unique
+  storeId  String
+  store    Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  key      String
   name     String
   category String
   content  String
   active   Boolean @default(true)
   order    Int     @default(0)
+
+  @@unique([storeId, key])
 }
 
 model Sale {
   id          String   @id @default(cuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   orderNumber String
   createdAt   DateTime @default(now())
 
@@ -194,6 +249,8 @@ model SaleTradeInAnswer {
 
 model Repair {
   id               String    @id @default(cuid())
+  storeId          String
+  store            Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
   createdAt        DateTime  @default(now())
   customerId       String?
   customer         Customer? @relation(fields: [customerId], references: [id])
@@ -214,14 +271,20 @@ model Repair {
 // Taxas cobradas por forma de pagamento (editável em Configurações)
 model PaymentFee {
   id         String @id @default(cuid())
-  key        String @unique
+  storeId    String
+  store      Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  key        String
   label      String
   feePercent Float
   order      Int    @default(0)
+
+  @@unique([storeId, key])
 }
 
 model InventoryDevice {
   id          String   @id @default(cuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   name        String
   storage     String
   color       String
@@ -235,6 +298,8 @@ model InventoryDevice {
 
 model InventoryPart {
   id          String   @id @default(cuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   name        String
   compatible  String
   quantity    Int
@@ -246,6 +311,8 @@ model InventoryPart {
 
 model Expense {
   id            String   @id @default(cuid())
+  storeId       String
+  store         Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   date          DateTime @default(now())
   description   String
   paymentMethod String
@@ -253,16 +320,20 @@ model Expense {
 }
 
 model StaffUser {
-  id         String  @id @default(cuid())
-  name       String
-  role       String
-  isOwner    Boolean @default(false)
-  vendas     Boolean @default(false)
-  conserto   Boolean @default(false)
-  clientes   Boolean @default(false)
-  financeiro Boolean @default(false)
-  estoque    Boolean @default(false)
-  config     Boolean @default(false)
+  id           String  @id @default(cuid())
+  storeId      String
+  store        Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name         String
+  email        String  @unique
+  passwordHash String
+  role         String
+  isOwner      Boolean @default(false)
+  vendas       Boolean @default(false)
+  conserto     Boolean @default(false)
+  clientes     Boolean @default(false)
+  financeiro   Boolean @default(false)
+  estoque      Boolean @default(false)
+  config       Boolean @default(false)
   opportunities CrmOpportunity[]
   interactions CrmInteraction[]
   crmTasks      CrmTask[]

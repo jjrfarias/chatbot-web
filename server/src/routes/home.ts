@@ -9,11 +9,11 @@ function startOfDay(d: Date) {
   return x;
 }
 
-homeRouter.get("/summary", async (_req, res) => {
+homeRouter.get("/summary", async (req, res) => {
   const today = startOfDay(new Date());
   const [allSales, allRepairs] = await Promise.all([
-    prisma.sale.findMany({ orderBy: { createdAt: "desc" } }),
-    prisma.repair.findMany({ orderBy: { createdAt: "desc" } }),
+    prisma.sale.findMany({ where: { storeId: req.storeId }, orderBy: { createdAt: "desc" } }),
+    prisma.repair.findMany({ where: { storeId: req.storeId }, orderBy: { createdAt: "desc" } }),
   ]);
 
   const vendasHoje = allSales.filter((s) => s.createdAt >= today).length;

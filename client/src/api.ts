@@ -1,4 +1,5 @@
 import type {
+  AuthSession,
   ChecklistCategory,
   CrmBoard,
   CrmActions,
@@ -25,19 +26,29 @@ import type {
 
 const BASE = "/api";
 
+export class UnauthorizedError extends Error {}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     ...options,
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error ?? `Erro na requisição: ${res.status}`);
+    const message = body.error ?? `Erro na requisição: ${res.status}`;
+    if (res.status === 401) throw new UnauthorizedError(message);
+    throw new Error(message);
   }
   return res.json();
 }
 
 export const api = {
+  login: (email: string, password: string) =>
+    request<AuthSession>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
+  logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
+  me: () => request<AuthSession>("/auth/me"),
+
   getDevices: () => request<Device[]>("/devices"),
   getTradeInModels: () => request<TradeInModel[]>("/trade-in-models"),
   updateTradeInModels: (models: { id: string; baseValue: number }[]) =>
@@ -127,7 +138,7 @@ export const api = {
   }) => request<InventoryPart>("/inventory/parts", { method: "POST", body: JSON.stringify(payload) }),
 
   getStaff: () => request<StaffUser[]>("/staff"),
-  createStaff: (payload: { name: string; role: string }) =>
+  createStaff: (payload: { name: string; role: string; email: string; password: string }) =>
     request<StaffUser>("/staff", { method: "POST", body: JSON.stringify(payload) }),
   toggleStaffPermission: (id: string, key: string, value: boolean) =>
     request<StaffUser>(`/staff/${id}/permissions`, { method: "PATCH", body: JSON.stringify({ key, value }) }),

@@ -9,8 +9,8 @@ function statusFor(quantity: number, minQuantity: number) {
   return "Disponível";
 }
 
-inventoryRouter.get("/devices", async (_req, res) => {
-  const devices = await prisma.inventoryDevice.findMany({ orderBy: { createdAt: "asc" } });
+inventoryRouter.get("/devices", async (req, res) => {
+  const devices = await prisma.inventoryDevice.findMany({ where: { storeId: req.storeId }, orderBy: { createdAt: "asc" } });
   res.json(devices.map((d) => ({ ...d, status: statusFor(d.quantity, d.minQuantity) })));
 });
 
@@ -19,6 +19,7 @@ inventoryRouter.post("/devices", async (req, res) => {
   if (!name || !storage || !condition) return res.status(400).json({ error: "Dados incompletos" });
   const device = await prisma.inventoryDevice.create({
     data: {
+      storeId: req.storeId,
       name,
       storage,
       color: color || "",
@@ -32,8 +33,8 @@ inventoryRouter.post("/devices", async (req, res) => {
   res.status(201).json({ ...device, status: statusFor(device.quantity, device.minQuantity) });
 });
 
-inventoryRouter.get("/parts", async (_req, res) => {
-  const parts = await prisma.inventoryPart.findMany({ orderBy: { createdAt: "asc" } });
+inventoryRouter.get("/parts", async (req, res) => {
+  const parts = await prisma.inventoryPart.findMany({ where: { storeId: req.storeId }, orderBy: { createdAt: "asc" } });
   res.json(parts.map((p) => ({ ...p, status: statusFor(p.quantity, p.minQuantity) })));
 });
 
@@ -42,6 +43,7 @@ inventoryRouter.post("/parts", async (req, res) => {
   if (!name || !compatible) return res.status(400).json({ error: "Dados incompletos" });
   const part = await prisma.inventoryPart.create({
     data: {
+      storeId: req.storeId,
       name,
       compatible,
       quantity: Number(quantity) || 0,

@@ -1,20 +1,37 @@
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
+import { initials } from "../api";
+import type { StaffUser } from "../types";
 
-const links = [
+type PermissionKey = keyof Pick<StaffUser, "vendas" | "conserto" | "clientes" | "financeiro" | "estoque" | "config">;
+
+const links: { to: string; label: string; icon: typeof HomeIcon; permission?: PermissionKey; ownerOnly?: boolean }[] = [
   { to: "/", label: "Início", icon: HomeIcon },
-  { to: "/clientes", label: "Clientes", icon: ClientsIcon },
-  { to: "/crm", label: "CRM", icon: CrmIcon },
+  { to: "/clientes", label: "Clientes", icon: ClientsIcon, permission: "clientes" },
+  { to: "/crm", label: "CRM", icon: CrmIcon, permission: "clientes" },
   { to: "/acoes", label: "Ações de hoje", icon: ActionsIcon },
-  { to: "/nova-venda", label: "Nova venda", icon: PhoneIcon },
-  { to: "/conserto", label: "Conserto", icon: BoltIcon },
-  { to: "/financeiro", label: "Financeiro", icon: FinanceIcon },
-  { to: "/estoque", label: "Estoque", icon: StockIcon },
-  { to: "/usuarios", label: "Usuários", icon: UsersIcon },
-  { to: "/historico", label: "Histórico", icon: ClockIcon },
-  { to: "/configuracoes", label: "Configurações", icon: GearIcon },
+  { to: "/nova-venda", label: "Nova venda", icon: PhoneIcon, permission: "vendas" },
+  { to: "/conserto", label: "Conserto", icon: BoltIcon, permission: "conserto" },
+  { to: "/financeiro", label: "Financeiro", icon: FinanceIcon, permission: "financeiro" },
+  { to: "/estoque", label: "Estoque", icon: StockIcon, permission: "estoque" },
+  { to: "/usuarios", label: "Usuários", icon: UsersIcon, ownerOnly: true },
+  { to: "/historico", label: "Histórico", icon: ClockIcon, permission: "vendas" },
+  { to: "/configuracoes", label: "Configurações", icon: GearIcon, permission: "config" },
 ];
 
 export function Sidebar() {
+  const { session, logout } = useAuth();
+  const user = session?.user;
+  const store = session?.store;
+
+  const visibleLinks = links.filter((link) => {
+    if (!user) return false;
+    if (user.isOwner) return true;
+    if (link.ownerOnly) return false;
+    if (link.permission) return user[link.permission];
+    return true;
+  });
+
   return (
     <aside className="flex h-screen w-[220px] flex-shrink-0 flex-col justify-between bg-cr-sidebar px-[18px] py-7 print:hidden">
       <div className="flex flex-col gap-9">
@@ -22,11 +39,11 @@ export function Sidebar() {
           <div className="font-display text-[21px] font-bold text-white">
             CR <span className="font-normal text-cr-sidebar-muted">SMART</span>
           </div>
-          <div className="mt-[3px] text-[11px] text-[#6f6e68]">Vendas &amp; Assistência iPhone</div>
+          <div className="mt-[3px] text-[11px] text-[#6f6e68]">{store?.tagline ?? "Vendas & Assistência iPhone"}</div>
         </div>
 
         <nav className="flex flex-col gap-1">
-          {links.map(({ to, label, icon: Icon }) => (
+          {visibleLinks.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
@@ -48,14 +65,22 @@ export function Sidebar() {
         </nav>
       </div>
 
-      <div className="flex items-center gap-2.5 border-t border-cr-sidebar-border px-2.5 py-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cr-sidebar-border font-display text-xs font-semibold text-white">
-          MS
+      <div className="flex flex-col gap-1 border-t border-cr-sidebar-border pt-2.5">
+        <div className="flex items-center gap-2.5 px-2.5 py-1.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cr-sidebar-border font-display text-xs font-semibold text-white">
+            {user ? initials(user.name) : ""}
+          </div>
+          <div className="flex min-w-0 flex-col leading-tight">
+            <span className="truncate text-[12.5px] font-semibold text-white">{user?.name}</span>
+            <span className="text-[11px] text-[#6f6e68]">{user?.isOwner ? "Admin" : user?.role}</span>
+          </div>
         </div>
-        <div className="flex flex-col leading-tight">
-          <span className="text-[12.5px] font-semibold text-white">Marcos Silva</span>
-          <span className="text-[11px] text-[#6f6e68]">Admin</span>
-        </div>
+        <button
+          onClick={logout}
+          className="rounded-lg px-2.5 py-1.5 text-left text-[11.5px] font-semibold text-cr-sidebar-muted hover:bg-cr-sidebar-hover hover:text-white"
+        >
+          Sair
+        </button>
       </div>
     </aside>
   );
@@ -82,19 +107,6 @@ function ClientsIcon({ className, active }: IconProps) {
   );
 }
 
-function CrmIcon({ className, active }: IconProps) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <rect x="2.5" y="3" width="15" height="14" rx="2" />
-      <path d="M7.5 3v14M12.5 3v14M4.5 7h1M9.5 10h1M14.5 6h1" />
-    </svg>
-  );
-}
-
-function ActionsIcon({ className, active }: IconProps) {
-  return <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M4 3.5h12v13H4z" /><path d="m7 8 1.3 1.3L11 6.5M7 13h6" /></svg>;
-}
-
 function PhoneIcon({ className, active }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -108,6 +120,24 @@ function BoltIcon({ className, active }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
       <path d="M11 2.5 5 11h4l-1 6.5 7-9.5h-4l0-5.5Z" />
+    </svg>
+  );
+}
+
+function CrmIcon({ className, active }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="2.5" y="3" width="15" height="14" rx="2" />
+      <path d="M7.5 3v14M12.5 3v14M4.5 7h1M9.5 10h1M14.5 6h1" />
+    </svg>
+  );
+}
+
+function ActionsIcon({ className, active }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke={stroke(active)} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M4 3.5h12v13H4z" />
+      <path d="m7 8 1.3 1.3L11 6.5M7 13h6" />
     </svg>
   );
 }

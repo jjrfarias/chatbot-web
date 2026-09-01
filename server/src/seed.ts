@@ -1,7 +1,10 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import { hashPassword } from "./auth";
 
 const prisma = new PrismaClient();
+
+const DEFAULT_PASSWORD = "crsmart2026";
 
 const devices = [
   { name: "iPhone 15 Pro Max", color: "Titânio Natural", storage: "256GB", price: 8999 },
@@ -148,19 +151,13 @@ const inventoryParts = [
   { name: "Alto-falante", compatible: "iPhone 12", quantity: 4, minQuantity: 4, supplier: "SoundTech", costPrice: 60 },
 ];
 
-const staffUsers = [
-  { name: "Marcos Silva", role: "Dono da loja", isOwner: true, vendas: true, conserto: true, clientes: true, financeiro: true, estoque: true, config: true },
-  { name: "Ana Ferreira", role: "Atendente", isOwner: false, vendas: true, conserto: false, clientes: true, financeiro: false, estoque: false, config: false },
-  { name: "Diego Martins", role: "Técnico", isOwner: false, vendas: false, conserto: true, clientes: false, financeiro: false, estoque: true, config: false },
-  { name: "Camila Rocha", role: "Atendente", isOwner: false, vendas: true, conserto: false, clientes: true, financeiro: false, estoque: false, config: false },
-];
-
 async function main() {
   await prisma.customerTag.deleteMany();
   await prisma.crmTask.deleteMany();
   await prisma.crmInteraction.deleteMany();
   await prisma.crmOpportunity.deleteMany();
   await prisma.crmTag.deleteMany();
+  await prisma.crmMessageTemplate.deleteMany();
   await prisma.saleTradeInAnswer.deleteMany();
   await prisma.sale.deleteMany();
   await prisma.repair.deleteMany();
@@ -174,17 +171,36 @@ async function main() {
   await prisma.inventoryDevice.deleteMany();
   await prisma.inventoryPart.deleteMany();
   await prisma.staffUser.deleteMany();
+  await prisma.store.deleteMany();
 
-  await prisma.device.createMany({ data: devices });
-  const tradeInRows = await Promise.all(tradeInModels.map((t) => prisma.tradeInModel.create({ data: t })));
-  await prisma.paymentFee.createMany({ data: paymentFees });
-  await prisma.inventoryDevice.createMany({ data: inventoryDevices });
-  await prisma.inventoryPart.createMany({ data: inventoryParts });
-  await prisma.staffUser.createMany({ data: staffUsers });
+  const store = await prisma.store.create({
+    data: { name: "CR Smart", tagline: "Vendas & Assistência iPhone" },
+  });
+  const storeId = store.id;
+
+  const passwordHash = await hashPassword(DEFAULT_PASSWORD);
+  const staffRows = await Promise.all(
+    [
+      { name: "Marcos Silva", email: "marcos@crsmart.com.br", role: "Dono da loja", isOwner: true, vendas: true, conserto: true, clientes: true, financeiro: true, estoque: true, config: true },
+      { name: "Ana Ferreira", email: "ana@crsmart.com.br", role: "Atendente", isOwner: false, vendas: true, conserto: false, clientes: true, financeiro: false, estoque: false, config: false },
+      { name: "Diego Martins", email: "diego@crsmart.com.br", role: "Técnico", isOwner: false, vendas: false, conserto: true, clientes: false, financeiro: false, estoque: true, config: false },
+      { name: "Camila Rocha", email: "camila@crsmart.com.br", role: "Atendente", isOwner: false, vendas: true, conserto: false, clientes: true, financeiro: false, estoque: false, config: false },
+    ].map((s) => prisma.staffUser.create({ data: { ...s, storeId, passwordHash } })),
+  );
+  void staffRows;
+
+  await prisma.device.createMany({ data: devices.map((d) => ({ ...d, storeId })) });
+  const tradeInRows = await Promise.all(
+    tradeInModels.map((t) => prisma.tradeInModel.create({ data: { ...t, storeId } })),
+  );
+  await prisma.paymentFee.createMany({ data: paymentFees.map((f) => ({ ...f, storeId })) });
+  await prisma.inventoryDevice.createMany({ data: inventoryDevices.map((d) => ({ ...d, storeId })) });
+  await prisma.inventoryPart.createMany({ data: inventoryParts.map((p) => ({ ...p, storeId })) });
 
   for (const category of checklist) {
     await prisma.checklistCategory.create({
       data: {
+        storeId,
         key: category.key,
         label: category.label,
         order: category.order,
@@ -202,17 +218,17 @@ async function main() {
   const customerRows: Record<string, { id: string; name: string; phone: string }> = {};
   for (const c of customers) {
     const row = await prisma.customer.create({
-      data: { name: c.name, phone: c.phone, cpf: c.cpf, vip: c.vip, notes: c.notes, createdAt: c.createdAt },
+      data: { storeId, name: c.name, phone: c.phone, cpf: c.cpf, vip: c.vip, notes: c.notes, createdAt: c.createdAt },
     });
     customerRows[c.key] = row;
   }
 
   const tradeIn14ProMax = tradeInRows.find((t) => t.name === "iPhone 14 Pro Max")!;
-  const device15Pro = await prisma.device.findFirstOrThrow({ where: { name: "iPhone 15 Pro", storage: "128GB" } });
-  const device15ProMax256 = await prisma.device.findFirstOrThrow({ where: { name: "iPhone 15 Pro Max", storage: "256GB" } });
-  const device14 = await prisma.device.findFirstOrThrow({ where: { name: "iPhone 14" } });
+  const device15Pro = await prisma.device.findFirstOrThrow({ where: { storeId, name: "iPhone 15 Pro", storage: "128GB" } });
+  const device15ProMax256 = await prisma.device.findFirstOrThrow({ where: { storeId, name: "iPhone 15 Pro Max", storage: "256GB" } });
+  const device14 = await prisma.device.findFirstOrThrow({ where: { storeId, name: "iPhone 14" } });
 
-  const checklistCats = await prisma.checklistCategory.findMany({ include: { options: true }, orderBy: { order: "asc" } });
+  const checklistCats = await prisma.checklistCategory.findMany({ where: { storeId }, include: { options: true }, orderBy: { order: "asc" } });
   const answerFor = (categoryKey: string, optionLabel: string) => {
     const cat = checklistCats.find((c) => c.key === categoryKey)!;
     const opt = cat.options.find((o) => o.label === optionLabel)!;
@@ -234,6 +250,7 @@ async function main() {
 
   await prisma.sale.create({
     data: {
+      storeId,
       orderNumber: "CR-08421",
       createdAt: new Date("2026-09-01T14:00:00"),
       customerId: customerRows.bruno.id,
@@ -264,6 +281,7 @@ async function main() {
 
   await prisma.sale.create({
     data: {
+      storeId,
       orderNumber: "CR-05190",
       createdAt: new Date("2023-01-10T11:00:00"),
       customerId: customerRows.bruno.id,
@@ -285,6 +303,7 @@ async function main() {
 
   await prisma.sale.create({
     data: {
+      storeId,
       orderNumber: "CR-08390",
       createdAt: new Date("2026-08-30T16:30:00"),
       customerId: customerRows.felipe.id,
@@ -306,6 +325,7 @@ async function main() {
 
   await prisma.sale.create({
     data: {
+      storeId,
       orderNumber: "CR-07120",
       createdAt: new Date("2026-07-15T10:00:00"),
       customerId: customerRows.rafael.id,
@@ -327,6 +347,7 @@ async function main() {
 
   await prisma.repair.create({
     data: {
+      storeId,
       createdAt: new Date("2026-09-01T09:30:00"),
       customerId: customerRows.larissa.id,
       customerName: customerRows.larissa.name,
@@ -343,6 +364,7 @@ async function main() {
 
   await prisma.repair.create({
     data: {
+      storeId,
       createdAt: new Date("2026-08-29T15:00:00"),
       customerId: customerRows.ana.id,
       customerName: customerRows.ana.name,
@@ -359,6 +381,7 @@ async function main() {
 
   await prisma.repair.create({
     data: {
+      storeId,
       createdAt: new Date("2025-03-14T13:00:00"),
       customerId: customerRows.bruno.id,
       customerName: customerRows.bruno.name,
@@ -375,13 +398,15 @@ async function main() {
   });
 
   await prisma.expense.create({
-    data: { date: new Date("2026-09-01T12:00:00"), description: "Compra de peças · Fornecedor ABC Peças", paymentMethod: "Transferência", amount: 1240 },
+    data: { storeId, date: new Date("2026-09-01T12:00:00"), description: "Compra de peças · Fornecedor ABC Peças", paymentMethod: "Transferência", amount: 1240 },
   });
   await prisma.expense.create({
-    data: { date: new Date("2026-08-28T09:00:00"), description: "Aluguel do ponto comercial", paymentMethod: "Transferência", amount: 4500 },
+    data: { storeId, date: new Date("2026-08-28T09:00:00"), description: "Aluguel do ponto comercial", paymentMethod: "Transferência", amount: 4500 },
   });
 
   console.log("Seed concluído.");
+  console.log(`Loja criada: ${store.name} (${store.id})`);
+  console.log(`Login: marcos@crsmart.com.br / ${DEFAULT_PASSWORD}`);
 }
 
 main()

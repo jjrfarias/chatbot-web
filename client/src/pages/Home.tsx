@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api, formatCurrency } from "../api";
+import { useAuth } from "../auth/AuthContext";
 import type { HomeSummary } from "../types";
 import { Badge, StatCard } from "../components/ui";
 
@@ -12,6 +13,8 @@ const MONTHS = [
 
 export function Home() {
   const navigate = useNavigate();
+  const { session } = useAuth();
+  const firstName = session?.user.name.split(" ")[0] ?? "";
   const [summary, setSummary] = useState<HomeSummary | null>(null);
   const [search, setSearch] = useState("");
 
@@ -31,7 +34,7 @@ export function Home() {
     <div className="mx-auto max-w-5xl px-11 py-9">
       <div className="flex items-center justify-between">
         <div>
-          <div className="font-display text-2xl font-bold">Bom dia, Marcos</div>
+          <div className="font-display text-2xl font-bold">Bom dia, {firstName}</div>
           <div className="mt-0.5 text-[13px] capitalize text-cr-muted">{dateLabel}</div>
         </div>
         <form

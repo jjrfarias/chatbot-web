@@ -215,6 +215,7 @@ export interface InventoryPart {
 export interface StaffUser {
   id: string;
   name: string;
+  email: string;
   role: string;
   isOwner: boolean;
   vendas: boolean;
@@ -223,6 +224,21 @@ export interface StaffUser {
   financeiro: boolean;
   estoque: boolean;
   config: boolean;
+}
+
+export interface Store {
+  id: string;
+  name: string;
+  tagline: string | null;
+  logoUrl: string | null;
+  primaryColor: string | null;
+  address: string | null;
+  phone: string | null;
+}
+
+export interface AuthSession {
+  user: StaffUser;
+  store: Store;
 }
 
 export interface FinanceChartDay {

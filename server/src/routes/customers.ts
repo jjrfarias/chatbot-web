@@ -6,6 +6,7 @@ export const customersRouter = Router();
 customersRouter.get("/", async (req, res) => {
   const q = (req.query.q as string | undefined)?.toLowerCase();
   const customers = await prisma.customer.findMany({
+    where: { storeId: req.storeId },
     orderBy: { createdAt: "desc" },
     include: { sales: true, repairs: true },
   });
@@ -39,8 +40,8 @@ customersRouter.get("/", async (req, res) => {
 });
 
 customersRouter.get("/:id", async (req, res) => {
-  const customer = await prisma.customer.findUnique({
-    where: { id: req.params.id },
+  const customer = await prisma.customer.findFirst({
+    where: { id: req.params.id, storeId: req.storeId },
     include: {
       sales: true,
       repairs: true,
@@ -95,6 +96,10 @@ customersRouter.patch("/:id", async (req, res) => {
   const { name, phone, cpf, notes, vip } = req.body ?? {};
   if (name !== undefined && !String(name).trim()) return res.status(400).json({ error: "Nome não pode ficar vazio" });
   if (phone !== undefined && !String(phone).trim()) return res.status(400).json({ error: "Telefone não pode ficar vazio" });
+
+  const existing = await prisma.customer.findFirst({ where: { id: req.params.id, storeId: req.storeId } });
+  if (!existing) return res.status(404).json({ error: "Cliente não encontrado" });
+
   const customer = await prisma.customer.update({
     where: { id: req.params.id },
     data: {
@@ -111,6 +116,6 @@ customersRouter.patch("/:id", async (req, res) => {
 customersRouter.post("/", async (req, res) => {
   const { name, phone, cpf } = req.body ?? {};
   if (!name || !phone) return res.status(400).json({ error: "Nome e telefone são obrigatórios" });
-  const customer = await prisma.customer.create({ data: { name, phone, cpf: cpf || null } });
+  const customer = await prisma.customer.create({ data: { storeId: req.storeId, name, phone, cpf: cpf || null } });
   res.status(201).json(customer);
 });

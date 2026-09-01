@@ -30,10 +30,11 @@ financeRouter.get("/summary", async (req, res) => {
   const period = (req.query.period as string) || "hoje";
   const start = rangeStart(period);
 
+  const storeId = req.storeId;
   const [sales, repairs, expenses] = await Promise.all([
-    prisma.sale.findMany({ where: { createdAt: { gte: start } } }),
-    prisma.repair.findMany({ where: { createdAt: { gte: start } } }),
-    prisma.expense.findMany({ where: { date: { gte: start } } }),
+    prisma.sale.findMany({ where: { storeId, createdAt: { gte: start } } }),
+    prisma.repair.findMany({ where: { storeId, createdAt: { gte: start } } }),
+    prisma.expense.findMany({ where: { storeId, date: { gte: start } } }),
   ]);
 
   const vendas = sales.reduce((s, x) => s + x.totalToPay, 0);
@@ -44,9 +45,9 @@ financeRouter.get("/summary", async (req, res) => {
   const chartStart = startOfDay(new Date());
   chartStart.setDate(chartStart.getDate() - 6);
   const [chartSales, chartRepairs, chartExpenses] = await Promise.all([
-    prisma.sale.findMany({ where: { createdAt: { gte: chartStart } } }),
-    prisma.repair.findMany({ where: { createdAt: { gte: chartStart } } }),
-    prisma.expense.findMany({ where: { date: { gte: chartStart } } }),
+    prisma.sale.findMany({ where: { storeId, createdAt: { gte: chartStart } } }),
+    prisma.repair.findMany({ where: { storeId, createdAt: { gte: chartStart } } }),
+    prisma.expense.findMany({ where: { storeId, date: { gte: chartStart } } }),
   ]);
 
   const chartDays = Array.from({ length: 7 }, (_, i) => {

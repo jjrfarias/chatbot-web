@@ -81,9 +81,11 @@ export function Usuarios() {
                 <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-cr-chip font-display text-[11px] font-bold">
                   {initials(c.name)}
                 </div>
-                <div>
-                  <div className="text-[12.5px] font-semibold">{c.name}</div>
-                  <div className="text-[11px] text-cr-muted">{c.role}</div>
+                <div className="min-w-0">
+                  <div className="truncate text-[12.5px] font-semibold">{c.name}</div>
+                  <div className="truncate text-[11px] text-cr-muted">
+                    {c.role} · {c.email}
+                  </div>
                 </div>
               </div>
               {PERMISSIONS.map((p) => (
@@ -113,6 +115,8 @@ export function Usuarios() {
 function AddStaffModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
   const [name, setName] = useState("");
   const [role, setRole] = useState("Atendente");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -121,7 +125,7 @@ function AddStaffModal({ onClose, onSaved }: { onClose: () => void; onSaved: () 
     setSaving(true);
     setError(null);
     try {
-      await api.createStaff({ name: name.trim(), role });
+      await api.createStaff({ name: name.trim(), role, email: email.trim(), password });
       onSaved();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro ao adicionar colaborador");
@@ -166,13 +170,42 @@ function AddStaffModal({ onClose, onSaved }: { onClose: () => void; onSaved: () 
           </select>
         </label>
 
+        <label className="mt-3 block text-xs font-semibold text-cr-muted">
+          E-mail de acesso
+          <input
+            required
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="colaborador@sualoja.com.br"
+            className="input mt-1"
+          />
+        </label>
+
+        <label className="mt-3 block text-xs font-semibold text-cr-muted">
+          Senha provisória
+          <input
+            required
+            minLength={6}
+            type="text"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Mínimo 6 caracteres"
+            className="input mt-1"
+          />
+        </label>
+        <p className="mt-1.5 text-[10.5px] text-cr-muted">Compartilhe essa senha com o colaborador. Ele poderá usá-la para entrar no sistema.</p>
+
         {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
 
         <div className="mt-5 flex justify-end gap-2">
           <button type="button" onClick={onClose} className="rounded-xl border border-cr-border px-4 py-2.5 text-xs font-bold">
             Cancelar
           </button>
-          <button disabled={saving || !name.trim()} className="rounded-xl bg-cr-ink px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50">
+          <button
+            disabled={saving || !name.trim() || !email.trim() || password.length < 6}
+            className="rounded-xl bg-cr-ink px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50"
+          >
             {saving ? "Adicionando..." : "Adicionar"}
           </button>
         </div>
