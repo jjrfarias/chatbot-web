@@ -36,10 +36,14 @@ export function Sidebar() {
     <aside className="flex h-screen w-[220px] flex-shrink-0 flex-col justify-between bg-cr-sidebar px-[18px] py-7 print:hidden">
       <div className="flex flex-col gap-9">
         <div>
-          <div className="font-display text-[21px] font-bold text-white">
-            CR <span className="font-normal text-cr-sidebar-muted">SMART</span>
-          </div>
-          <div className="mt-[3px] text-[11px] text-[#6f6e68]">{store?.tagline ?? "Vendas & Assistência iPhone"}</div>
+          {store?.logoUrl ? (
+            <div className="inline-block rounded-xl bg-white p-2">
+              <img src={store.logoUrl} alt={store.name} className="h-9 max-w-[150px] object-contain" />
+            </div>
+          ) : (
+            <div className="font-display text-[21px] font-bold text-white">{store?.name ?? "CR SMART"}</div>
+          )}
+          <div className="mt-[6px] text-[11px] text-[#6f6e68]">{store?.tagline ?? "Vendas & Assistência iPhone"}</div>
         </div>
 
         <nav className="flex flex-col gap-1">

@@ -1,5 +1,6 @@
 import type {
   AuthSession,
+  Store,
   ChecklistCategory,
   CrmBoard,
   CrmActions,
@@ -43,11 +44,30 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
+async function upload<T>(path: string, formData: FormData): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, { method: "POST", credentials: "include", body: formData });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const message = body.error ?? `Erro na requisição: ${res.status}`;
+    if (res.status === 401) throw new UnauthorizedError(message);
+    throw new Error(message);
+  }
+  return res.json();
+}
+
 export const api = {
   login: (email: string, password: string) =>
     request<AuthSession>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
   me: () => request<AuthSession>("/auth/me"),
+
+  getStore: () => request<Store>("/store"),
+  uploadStoreLogo: (file: File) => {
+    const formData = new FormData();
+    formData.append("logo", file);
+    return upload<Store>("/store/logo", formData);
+  },
+  removeStoreLogo: () => request<Store>("/store/logo", { method: "DELETE" }),
 
   getDevices: () => request<Device[]>("/devices"),
   getTradeInModels: () => request<TradeInModel[]>("/trade-in-models"),

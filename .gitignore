@@ -8,6 +8,7 @@ server/.env
 server/prisma/dev.db
 server/prisma/dev.db-journal
 server/node_modules/
+server/uploads/
 
 # Backups (contain real customer data, never commit)
 backups/

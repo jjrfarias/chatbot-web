@@ -4,6 +4,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { authRouter } from "./routes/auth";
+import { storeRouter } from "./routes/store";
 import { catalogRouter } from "./routes/catalog";
 import { salesRouter } from "./routes/sales";
 import { customersRouter } from "./routes/customers";
@@ -23,8 +24,10 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 app.use("/api", requireAuth, catalogRouter);
+app.use("/api/store", requireAuth, storeRouter);
 app.use("/api/sales", requireAuth, salesRouter);
 app.use("/api/customers", requireAuth, customersRouter);
 app.use("/api/repairs", requireAuth, repairsRouter);

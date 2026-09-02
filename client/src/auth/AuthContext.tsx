@@ -1,13 +1,14 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { api } from "../api";
-import type { AuthSession } from "../types";
+import type { AuthSession, Store } from "../types";
 
 interface AuthContextValue {
   session: AuthSession | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateStore: (store: Store) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -34,7 +35,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
   }
 
-  return <AuthContext.Provider value={{ session, loading, login, logout }}>{children}</AuthContext.Provider>;
+  function updateStore(store: Store) {
+    setSession((prev) => (prev ? { ...prev, store } : prev));
+  }
+
+  return (
+    <AuthContext.Provider value={{ session, loading, login, logout, updateStore }}>{children}</AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
@@ -42,4 +49,3 @@ export function useAuth() {
   if (!ctx) throw new Error("useAuth deve ser usado dentro de AuthProvider");
   return ctx;
 }
-
