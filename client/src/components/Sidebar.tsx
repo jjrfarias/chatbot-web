@@ -38,7 +38,12 @@ export function Sidebar() {
         <div className="flex flex-col items-center text-center">
           {store?.logoUrl ? (
             <div className="rounded-xl p-2" style={{ backgroundColor: store.logoBackgroundColor || "#ffffff" }}>
-              <img src={store.logoUrl} alt={store.name} className="h-9 max-w-[150px] object-contain" />
+              <img
+                src={store.logoUrl}
+                alt={store.name}
+                className="object-contain"
+                style={{ height: `${36 * (store.logoSize || 1)}px`, maxWidth: `${Math.min(150 * (store.logoSize || 1), 180)}px` }}
+              />
             </div>
           ) : (
             <>
@@ -55,8 +60,8 @@ export function Sidebar() {
               to={to}
               end={to === "/"}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-[10px] px-3 py-[11px] text-[13.5px] transition-colors hover:bg-cr-sidebar-hover ${
-                  isActive ? "bg-cr-sidebar-hover font-semibold text-white" : "font-medium text-cr-sidebar-muted"
+                `flex items-center gap-3 rounded-[10px] px-3 py-[11px] text-[13.5px] transition-colors ${
+                  isActive ? "bg-cr-accent font-semibold text-white" : "font-medium text-cr-sidebar-muted hover:bg-cr-sidebar-hover"
                 }`
               }
             >

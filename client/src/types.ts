@@ -232,6 +232,7 @@ export interface Store {
   tagline: string | null;
   logoUrl: string | null;
   logoBackgroundColor: string | null;
+  logoSize: number | null;
   primaryColor: string | null;
   address: string | null;
   phone: string | null;

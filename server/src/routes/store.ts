@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import sharp from "sharp";
 import { prisma } from "../db";
 
 export const storeRouter = Router();
@@ -54,7 +55,7 @@ const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
 storeRouter.patch("/", async (req, res) => {
   if (!(await requireOwner(req, res))) return;
-  const { name, tagline, primaryColor, logoBackgroundColor } = req.body ?? {};
+  const { name, tagline, primaryColor, logoBackgroundColor, logoSize } = req.body ?? {};
 
   if (name !== undefined && !String(name).trim()) {
     return res.status(400).json({ error: "Nome da loja não pode ficar vazio" });
@@ -65,6 +66,9 @@ storeRouter.patch("/", async (req, res) => {
   if (logoBackgroundColor !== undefined && logoBackgroundColor !== null && !HEX_COLOR.test(logoBackgroundColor)) {
     return res.status(400).json({ error: "Cor de fundo da logo inválida" });
   }
+  if (logoSize !== undefined && logoSize !== null && (typeof logoSize !== "number" || logoSize < 0.5 || logoSize > 2.5)) {
+    return res.status(400).json({ error: "Tamanho da logo inválido" });
+  }
 
   const store = await prisma.store.update({
     where: { id: req.storeId },
@@ -73,6 +77,7 @@ storeRouter.patch("/", async (req, res) => {
       ...(tagline !== undefined && { tagline: tagline || null }),
       ...(primaryColor !== undefined && { primaryColor: primaryColor || null }),
       ...(logoBackgroundColor !== undefined && { logoBackgroundColor: logoBackgroundColor || null }),
+      ...(logoSize !== undefined && { logoSize: logoSize || 1 }),
     },
   });
   res.json(store);
@@ -86,6 +91,15 @@ storeRouter.post("/logo", (req, res) => {
       return;
     }
     if (!req.file) return res.status(400).json({ error: "Nenhuma imagem enviada" });
+
+    if (req.file.mimetype !== "image/svg+xml") {
+      try {
+        const trimmed = await sharp(req.file.path).trim({ threshold: 15 }).toBuffer();
+        fs.writeFileSync(req.file.path, trimmed);
+      } catch {
+        // se o corte automático falhar, mantém a imagem original
+      }
+    }
 
     const previous = await prisma.store.findUnique({ where: { id: req.storeId } });
     const store = await prisma.store.update({

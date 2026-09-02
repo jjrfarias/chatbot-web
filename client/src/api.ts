@@ -62,7 +62,7 @@ export const api = {
   me: () => request<AuthSession>("/auth/me"),
 
   getStore: () => request<Store>("/store"),
-  updateStore: (payload: { name?: string; tagline?: string | null; primaryColor?: string | null; logoBackgroundColor?: string | null }) =>
+  updateStore: (payload: { name?: string; tagline?: string | null; primaryColor?: string | null; logoBackgroundColor?: string | null; logoSize?: number | null }) =>
     request<Store>("/store", { method: "PATCH", body: JSON.stringify(payload) }),
   uploadStoreLogo: (file: File) => {
     const formData = new FormData();

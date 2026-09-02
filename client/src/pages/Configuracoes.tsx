@@ -115,6 +115,7 @@ function BrandSection() {
 
   const [logoBg, setLogoBg] = useState(store?.logoBackgroundColor || "#ffffff");
   const [accent, setAccent] = useState(store?.primaryColor || "#121210");
+  const [logoSize, setLogoSize] = useState(store?.logoSize || 1);
   const [savingColors, setSavingColors] = useState(false);
   const [colorsSaved, setColorsSaved] = useState(false);
   const [colorsError, setColorsError] = useState<string | null>(null);
@@ -123,12 +124,16 @@ function BrandSection() {
     if (store) {
       setLogoBg(store.logoBackgroundColor || "#ffffff");
       setAccent(store.primaryColor || "#121210");
+      setLogoSize(store.logoSize || 1);
     }
-  }, [store?.logoBackgroundColor, store?.primaryColor]);
+  }, [store?.logoBackgroundColor, store?.primaryColor, store?.logoSize]);
 
   if (!store) return null;
 
-  const colorsChanged = logoBg !== (store.logoBackgroundColor || "#ffffff") || accent !== (store.primaryColor || "#121210");
+  const colorsChanged =
+    logoBg !== (store.logoBackgroundColor || "#ffffff") ||
+    accent !== (store.primaryColor || "#121210") ||
+    logoSize !== (store.logoSize || 1);
 
   function pickFile() {
     fileRef.current?.click();
@@ -182,7 +187,7 @@ function BrandSection() {
     setColorsSaved(false);
     setColorsError(null);
     try {
-      const updated = await api.updateStore({ logoBackgroundColor: logoBg, primaryColor: accent });
+      const updated = await api.updateStore({ logoBackgroundColor: logoBg, primaryColor: accent, logoSize });
       updateStore(updated);
       setColorsSaved(true);
     } catch (e) {
@@ -205,7 +210,12 @@ function BrandSection() {
         <div className="flex h-24 w-52 flex-shrink-0 items-center justify-center rounded-xl bg-cr-sidebar px-4">
           {displayLogoUrl ? (
             <div className="rounded-xl p-2" style={{ backgroundColor: logoBg }}>
-              <img src={displayLogoUrl} alt={store.name} className="h-9 max-w-[150px] object-contain" />
+              <img
+                src={displayLogoUrl}
+                alt={store.name}
+                className="object-contain"
+                style={{ height: `${36 * logoSize}px`, maxWidth: `${Math.min(150 * logoSize, 180)}px` }}
+              />
             </div>
           ) : (
             <div className="font-display text-lg font-bold text-white">{store.name}</div>
@@ -261,6 +271,21 @@ function BrandSection() {
             <div className="text-[12px] font-bold">Cor de fundo da logo</div>
             <div className="mt-0.5 text-[10.5px] text-cr-muted">O quadro atrás da sua logo no menu.</div>
             <ColorPicker presets={LOGO_BG_PRESETS} value={logoBg} onChange={setLogoBg} />
+
+            <div className="mt-4 text-[12px] font-bold">Tamanho da logo</div>
+            <div className="mt-0.5 text-[10.5px] text-cr-muted">Deixe a logo maior ou menor no menu.</div>
+            <div className="mt-2.5 flex items-center gap-2.5">
+              <input
+                type="range"
+                min={0.5}
+                max={2}
+                step={0.1}
+                value={logoSize}
+                onChange={(e) => setLogoSize(Number(e.target.value))}
+                className="w-40"
+              />
+              <span className="text-[11px] font-mono text-cr-muted">{Math.round(logoSize * 100)}%</span>
+            </div>
           </div>
           <div>
             <div className="text-[12px] font-bold">Cor de destaque do sistema</div>
@@ -282,12 +307,13 @@ function BrandSection() {
                 disabled={savingColors}
                 className="rounded-lg bg-cr-accent px-3.5 py-2 text-xs font-bold text-white disabled:opacity-50"
               >
-                {savingColors ? "Salvando..." : "Salvar cores"}
+                {savingColors ? "Salvando..." : "Salvar marca"}
               </button>
               <button
                 onClick={() => {
                   setLogoBg(store.logoBackgroundColor || "#ffffff");
                   setAccent(store.primaryColor || "#121210");
+                  setLogoSize(store.logoSize || 1);
                   setColorsError(null);
                 }}
                 className="rounded-lg border border-cr-border px-3.5 py-2 text-xs font-bold"
@@ -296,7 +322,7 @@ function BrandSection() {
               </button>
             </div>
           )}
-          {colorsSaved && !colorsChanged && <div className="col-span-2 text-[11px] font-semibold text-cr-ink">Cores salvas.</div>}
+          {colorsSaved && !colorsChanged && <div className="col-span-2 text-[11px] font-semibold text-cr-ink">Marca salva.</div>}
           {colorsError && <div className="col-span-2 text-[11px] font-semibold text-red-600">{colorsError}</div>}
         </div>
       )}

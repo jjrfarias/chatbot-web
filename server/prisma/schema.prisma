@@ -14,6 +14,7 @@ model Store {
   tagline      String?
   logoUrl      String?
   logoBackgroundColor String?
+  logoSize     Float?   @default(1)
   primaryColor String?
   address      String?
   phone        String?
