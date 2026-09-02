@@ -81,7 +81,7 @@ export function Conserto() {
       </div>
 
       {success && (
-        <div className="mt-4 rounded-xl border border-cr-ink bg-cr-bg px-4 py-3 text-[13px] font-semibold">
+        <div className="mt-4 rounded-xl border border-cr-accent bg-cr-bg px-4 py-3 text-[13px] font-semibold">
           Aparelho registrado com sucesso.
         </div>
       )}
@@ -97,7 +97,7 @@ export function Conserto() {
                   type="button"
                   onClick={() => setModel(m)}
                   className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-                    model === m ? "border-[1.4px] border-cr-ink bg-cr-ink text-white" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"
+                    model === m ? "border-[1.4px] border-cr-accent bg-cr-accent text-white" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"
                   }`}
                 >
                   {m}
@@ -123,7 +123,7 @@ export function Conserto() {
                   type="button"
                   onClick={() => setDeadlineLabel(d)}
                   className={`rounded-[10px] px-3.5 py-2 text-[12.5px] font-semibold ${
-                    deadlineLabel === d ? "border-[1.4px] border-cr-ink bg-cr-ink text-white" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"
+                    deadlineLabel === d ? "border-[1.4px] border-cr-accent bg-cr-accent text-white" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"
                   }`}
                 >
                   {d}
@@ -147,10 +147,10 @@ export function Conserto() {
                     key={d.id}
                     onClick={() => setSelectedDefects((prev) => ({ ...prev, [d.id]: !sel }))}
                     className={`flex cursor-pointer items-center gap-2 rounded-[10px] px-2.5 py-2.5 text-xs font-semibold ${
-                      sel ? "border-[1.4px] border-cr-ink bg-cr-bg" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"
+                      sel ? "border-[1.4px] border-cr-accent bg-cr-bg" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"
                     }`}
                   >
-                    <div className={`h-3.5 w-3.5 flex-shrink-0 rounded-[4px] border-[1.4px] ${sel ? "border-cr-ink bg-cr-ink" : "border-cr-dot"}`} />
+                    <div className={`h-3.5 w-3.5 flex-shrink-0 rounded-[4px] border-[1.4px] ${sel ? "border-cr-accent bg-cr-accent" : "border-cr-dot"}`} />
                     <span>{d.label}</span>
                   </div>
                 );
@@ -164,20 +164,20 @@ export function Conserto() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Ex: cliente relata queda recente, aparelho liga mas trava ao abrir a câmera..."
-              className="h-16 resize-none rounded-[10px] border-[1.4px] border-cr-border px-3.5 py-2.5 text-[13px] outline-none focus:border-cr-ink"
+              className="h-16 resize-none rounded-[10px] border-[1.4px] border-cr-border px-3.5 py-2.5 text-[13px] outline-none focus:border-cr-accent"
             />
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
-          <div className="flex items-center justify-between rounded-2xl bg-cr-ink p-[18px]">
+          <div className="flex items-center justify-between rounded-2xl bg-cr-accent p-[18px]">
             <div>
               <div className="text-[11.5px] font-semibold uppercase tracking-wide text-cr-sidebar-muted">Orçamento estimado</div>
               <div className="mt-0.5 font-display text-xl font-bold text-white">
                 {chosenDefects.length ? formatCurrency(budget) : "A definir após diagnóstico"}
               </div>
             </div>
-            <PrimaryButton disabled={!canSubmit || submitting} onClick={handleSubmit} className="bg-white text-cr-ink">
+            <PrimaryButton disabled={!canSubmit || submitting} onClick={handleSubmit} className="bg-white text-cr-accent">
               {submitting ? "Registrando..." : "Registrar aparelho"}
             </PrimaryButton>
           </div>

@@ -32,7 +32,7 @@ export function Financeiro() {
               key={p.key}
               onClick={() => setPeriod(p.key)}
               className={`rounded-[10px] px-4 py-2 text-[12.5px] font-bold ${
-                period === p.key ? "border-[1.4px] border-cr-ink bg-cr-ink text-white" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"
+                period === p.key ? "border-[1.4px] border-cr-accent bg-cr-accent text-white" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"
               }`}
             >
               {p.label}
@@ -73,7 +73,7 @@ export function Financeiro() {
               <div className="text-[13px] font-bold">Entradas x saídas — últimos 7 dias</div>
               <div className="flex items-center gap-3.5 text-[11px] text-cr-secondary">
                 <span className="flex items-center gap-1.5">
-                  <span className="inline-block h-2.5 w-2.5 rounded-sm bg-cr-ink" /> Entradas
+                  <span className="inline-block h-2.5 w-2.5 rounded-sm bg-cr-accent" /> Entradas
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="inline-block h-2.5 w-2.5 rounded-sm border-[1.4px] border-cr-placeholder bg-white" /> Saídas
@@ -85,7 +85,7 @@ export function Financeiro() {
                 <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
                   <div className="flex h-[100px] items-end gap-[3px]">
                     <div
-                      className="w-3 rounded-t-[3px] bg-cr-ink"
+                      className="w-3 rounded-t-[3px] bg-cr-accent"
                       style={{ height: `${Math.round((d.entrada / maxVal) * 96) + 4}px` }}
                       title={formatCurrency(d.entrada)}
                     />

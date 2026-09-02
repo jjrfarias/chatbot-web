@@ -46,7 +46,7 @@ export function Clientes() {
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 rounded-xl bg-cr-ink px-5 py-3 text-[13px] font-bold text-white"
+          className="flex items-center gap-2 rounded-xl bg-cr-accent px-5 py-3 text-[13px] font-bold text-white"
         >
           + Novo cliente
         </button>
@@ -184,7 +184,7 @@ function AddCustomerModal({
           <button type="button" onClick={onClose} className="rounded-xl border border-cr-border px-4 py-2.5 text-xs font-bold">
             Cancelar
           </button>
-          <button disabled={saving} className="rounded-xl bg-cr-ink px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50">
+          <button disabled={saving} className="rounded-xl bg-cr-accent px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50">
             {saving ? "Criando..." : "Criar cliente"}
           </button>
         </div>

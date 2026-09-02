@@ -231,6 +231,7 @@ export interface Store {
   name: string;
   tagline: string | null;
   logoUrl: string | null;
+  logoBackgroundColor: string | null;
   primaryColor: string | null;
   address: string | null;
   phone: string | null;

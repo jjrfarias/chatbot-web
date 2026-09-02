@@ -45,7 +45,7 @@ export function StepModel({ selected, onSelect, onContinue }: Props) {
               <div
                 key={`${first.name}-${first.color}`}
                 className={`flex flex-col gap-3 rounded-2xl bg-white p-[18px] ${
-                  isGroupSelected ? "border-[1.6px] border-cr-ink" : "border-[1.6px] border-cr-border"
+                  isGroupSelected ? "border-[1.6px] border-cr-accent" : "border-[1.6px] border-cr-border"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -53,7 +53,7 @@ export function StepModel({ selected, onSelect, onContinue }: Props) {
                     <PhoneGlyph />
                   </div>
                   <div
-                    className={`h-4 w-4 rounded-full border-[1.6px] ${isGroupSelected ? "border-cr-ink bg-cr-ink" : "border-cr-dot"}`}
+                    className={`h-4 w-4 rounded-full border-[1.6px] ${isGroupSelected ? "border-cr-accent bg-cr-accent" : "border-cr-dot"}`}
                   />
                 </div>
                 <div>
@@ -68,7 +68,7 @@ export function StepModel({ selected, onSelect, onContinue }: Props) {
                       onClick={() => onSelect(v)}
                       className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                         selected?.id === v.id
-                          ? "border-[1.4px] border-cr-ink bg-cr-ink text-white"
+                          ? "border-[1.4px] border-cr-accent bg-cr-accent text-white"
                           : "border-[1.4px] border-cr-border bg-white text-cr-secondary"
                       }`}
                     >

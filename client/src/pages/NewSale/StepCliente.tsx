@@ -70,7 +70,7 @@ export function StepCliente({ value, onChange, onContinue }: Props) {
                 key={c.id}
                 onClick={() => onChange({ ...value, customerId: c.id, name: c.name, phone: c.phone, cpf: c.cpf ?? "" })}
                 className={`flex cursor-pointer items-center gap-2.5 rounded-2xl bg-white p-2.5 ${
-                  value.customerId === c.id ? "border-[1.6px] border-cr-ink" : "border-[1.6px] border-cr-border"
+                  value.customerId === c.id ? "border-[1.6px] border-cr-accent" : "border-[1.6px] border-cr-border"
                 }`}
               >
                 <div className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full bg-cr-chip font-display text-[13px] font-bold">
@@ -91,7 +91,7 @@ export function StepCliente({ value, onChange, onContinue }: Props) {
               value={value.name}
               onChange={(e) => onChange({ ...value, name: e.target.value })}
               placeholder="Ex: Bruno Cardoso"
-              className="w-full rounded-[10px] border-[1.4px] border-cr-border px-3.5 py-2.5 text-[13.5px] outline-none focus:border-cr-ink"
+              className="w-full rounded-[10px] border-[1.4px] border-cr-border px-3.5 py-2.5 text-[13.5px] outline-none focus:border-cr-accent"
             />
           </Field>
           <Field label="Telefone">
@@ -99,7 +99,7 @@ export function StepCliente({ value, onChange, onContinue }: Props) {
               value={value.phone}
               onChange={(e) => onChange({ ...value, phone: e.target.value })}
               placeholder="(11) 90000-0000"
-              className="w-full rounded-[10px] border-[1.4px] border-cr-border px-3.5 py-2.5 text-[13.5px] outline-none focus:border-cr-ink"
+              className="w-full rounded-[10px] border-[1.4px] border-cr-border px-3.5 py-2.5 text-[13.5px] outline-none focus:border-cr-accent"
             />
           </Field>
           <Field label="CPF" hint="(opcional, para nota fiscal)">
@@ -107,7 +107,7 @@ export function StepCliente({ value, onChange, onContinue }: Props) {
               value={value.cpf}
               onChange={(e) => onChange({ ...value, cpf: e.target.value })}
               placeholder="000.000.000-00"
-              className="w-full rounded-[10px] border-[1.4px] border-cr-border px-3.5 py-2.5 text-[13.5px] outline-none focus:border-cr-ink"
+              className="w-full rounded-[10px] border-[1.4px] border-cr-border px-3.5 py-2.5 text-[13.5px] outline-none focus:border-cr-accent"
             />
           </Field>
         </div>

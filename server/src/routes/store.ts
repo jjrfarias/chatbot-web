@@ -50,6 +50,34 @@ storeRouter.get("/", async (req, res) => {
   res.json(store);
 });
 
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
+storeRouter.patch("/", async (req, res) => {
+  if (!(await requireOwner(req, res))) return;
+  const { name, tagline, primaryColor, logoBackgroundColor } = req.body ?? {};
+
+  if (name !== undefined && !String(name).trim()) {
+    return res.status(400).json({ error: "Nome da loja não pode ficar vazio" });
+  }
+  if (primaryColor !== undefined && primaryColor !== null && !HEX_COLOR.test(primaryColor)) {
+    return res.status(400).json({ error: "Cor de tema inválida" });
+  }
+  if (logoBackgroundColor !== undefined && logoBackgroundColor !== null && !HEX_COLOR.test(logoBackgroundColor)) {
+    return res.status(400).json({ error: "Cor de fundo da logo inválida" });
+  }
+
+  const store = await prisma.store.update({
+    where: { id: req.storeId },
+    data: {
+      ...(name !== undefined && { name: String(name).trim() }),
+      ...(tagline !== undefined && { tagline: tagline || null }),
+      ...(primaryColor !== undefined && { primaryColor: primaryColor || null }),
+      ...(logoBackgroundColor !== undefined && { logoBackgroundColor: logoBackgroundColor || null }),
+    },
+  });
+  res.json(store);
+});
+
 storeRouter.post("/logo", (req, res) => {
   upload.single("logo")(req, res, async (err) => {
     if (err) return res.status(400).json({ error: err.message || "Erro ao enviar imagem" });

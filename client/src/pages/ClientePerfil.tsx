@@ -27,7 +27,7 @@ export function ClientePerfil() {
       <div className="mt-4 flex gap-5">
         <div className="flex w-80 flex-shrink-0 flex-col gap-3.5">
           <div className="flex flex-col items-center gap-2.5 rounded-2xl border border-cr-border bg-white p-[22px] text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-cr-ink font-display text-[22px] font-bold text-white">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-cr-accent font-display text-[22px] font-bold text-white">
               {initials(customer.name)}
             </div>
             <div>
@@ -62,13 +62,13 @@ export function ClientePerfil() {
             </button>
             <button
               onClick={() => navigate("/nova-venda", { state: { customerId: customer.id } })}
-              className="rounded-xl bg-cr-ink py-3 text-center text-[13px] font-bold text-white"
+              className="rounded-xl bg-cr-accent py-3 text-center text-[13px] font-bold text-white"
             >
               Nova venda para este cliente
             </button>
             <button
               onClick={() => setShowEdit(true)}
-              className="rounded-xl border-[1.6px] border-cr-ink py-3 text-center text-[13px] font-bold text-cr-ink"
+              className="rounded-xl border-[1.6px] border-cr-accent py-3 text-center text-[13px] font-bold text-cr-accent"
             >
               Editar dados
             </button>
@@ -198,7 +198,7 @@ function EditCustomerModal({
           <button type="button" onClick={onClose} className="rounded-xl border border-cr-border px-4 py-2.5 text-xs font-bold">
             Cancelar
           </button>
-          <button disabled={saving} className="rounded-xl bg-cr-ink px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50">
+          <button disabled={saving} className="rounded-xl bg-cr-accent px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50">
             {saving ? "Salvando..." : "Salvar alterações"}
           </button>
         </div>
@@ -248,13 +248,13 @@ function CrmPanel({ customer, reload }: { customer: CustomerDetail; reload: () =
       <div className="text-[12px] font-bold">Registrar contato</div>
       <select value={interactionType} onChange={(e) => setInteractionType(e.target.value)} className="input mt-3 bg-white"><option value="whatsapp">WhatsApp</option><option value="ligacao">Ligação</option><option value="loja">Atendimento na loja</option><option value="nota">Observação</option></select>
       <textarea value={interaction} onChange={(e) => setInteraction(e.target.value)} required className="input mt-2 min-h-20 resize-none" placeholder="O que foi conversado?" />
-      <button className="mt-2 rounded-lg bg-cr-ink px-3 py-2 text-[11px] font-bold text-white">Salvar contato</button>
+      <button className="mt-2 rounded-lg bg-cr-accent px-3 py-2 text-[11px] font-bold text-white">Salvar contato</button>
     </form>
     <form onSubmit={saveTask} className="rounded-2xl border border-cr-border bg-white p-4">
       <div className="text-[12px] font-bold">Agendar próxima ação</div>
       <input value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} required className="input mt-3" placeholder="Ex.: Retornar orçamento" />
       <input value={dueAt} onChange={(e) => setDueAt(e.target.value)} required type="datetime-local" className="input mt-2" />
-      <button className="mt-2 rounded-lg bg-cr-ink px-3 py-2 text-[11px] font-bold text-white">Criar tarefa</button>
+      <button className="mt-2 rounded-lg bg-cr-accent px-3 py-2 text-[11px] font-bold text-white">Criar tarefa</button>
     </form>
     {(customer.tasks.length > 0 || customer.interactions.length > 0) && <div className="col-span-2 rounded-2xl border border-cr-border bg-white">
       <div className="border-b border-cr-border px-4 py-3 text-[12px] font-bold">Atividades recentes</div>

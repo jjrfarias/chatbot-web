@@ -62,7 +62,7 @@ export function Configuracoes() {
                   onChange={(e) =>
                     setFees((prev) => prev.map((x) => (x.id === f.id ? { ...x, feePercent: Number(e.target.value) } : x)))
                   }
-                  className="w-14 rounded-lg border-[1.4px] border-cr-border px-2 py-1.5 text-right text-[13px] outline-none focus:border-cr-ink"
+                  className="w-14 rounded-lg border-[1.4px] border-cr-border px-2 py-1.5 text-right text-[13px] outline-none focus:border-cr-accent"
                 />
                 <span className="text-[12.5px] text-cr-muted">%</span>
               </div>
@@ -83,7 +83,7 @@ export function Configuracoes() {
                   onChange={(e) =>
                     setModels((prev) => prev.map((x) => (x.id === m.id ? { ...x, baseValue: Number(e.target.value) } : x)))
                   }
-                  className="w-[72px] rounded-lg border-[1.4px] border-cr-border px-2 py-1.5 text-right text-[13px] outline-none focus:border-cr-ink"
+                  className="w-[72px] rounded-lg border-[1.4px] border-cr-border px-2 py-1.5 text-right text-[13px] outline-none focus:border-cr-accent"
                 />
               </div>
             </div>
@@ -100,6 +100,9 @@ export function Configuracoes() {
   );
 }
 
+const LOGO_BG_PRESETS = ["#ffffff", "#121210", "#f6f5f2", "#0d0d0c"];
+const ACCENT_PRESETS = ["#121210", "#1d4ed8", "#059669", "#b91c1c", "#7c3aed", "#c2410c", "#0f766e", "#a21caf"];
+
 function BrandSection() {
   const { session, updateStore } = useAuth();
   const store = session?.store;
@@ -110,7 +113,22 @@ function BrandSection() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [logoBg, setLogoBg] = useState(store?.logoBackgroundColor || "#ffffff");
+  const [accent, setAccent] = useState(store?.primaryColor || "#121210");
+  const [savingColors, setSavingColors] = useState(false);
+  const [colorsSaved, setColorsSaved] = useState(false);
+  const [colorsError, setColorsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (store) {
+      setLogoBg(store.logoBackgroundColor || "#ffffff");
+      setAccent(store.primaryColor || "#121210");
+    }
+  }, [store?.logoBackgroundColor, store?.primaryColor]);
+
   if (!store) return null;
+
+  const colorsChanged = logoBg !== (store.logoBackgroundColor || "#ffffff") || accent !== (store.primaryColor || "#121210");
 
   function pickFile() {
     fileRef.current?.click();
@@ -159,6 +177,21 @@ function BrandSection() {
     }
   }
 
+  async function saveColors() {
+    setSavingColors(true);
+    setColorsSaved(false);
+    setColorsError(null);
+    try {
+      const updated = await api.updateStore({ logoBackgroundColor: logoBg, primaryColor: accent });
+      updateStore(updated);
+      setColorsSaved(true);
+    } catch (e) {
+      setColorsError(e instanceof Error ? e.message : "Erro ao salvar as cores");
+    } finally {
+      setSavingColors(false);
+    }
+  }
+
   const displayLogoUrl = previewUrl ?? store.logoUrl;
 
   return (
@@ -169,9 +202,9 @@ function BrandSection() {
       </div>
 
       <div className="mt-4 flex items-center gap-5">
-        <div className="flex h-24 w-52 flex-shrink-0 items-center rounded-xl bg-cr-sidebar px-4">
+        <div className="flex h-24 w-52 flex-shrink-0 items-center justify-center rounded-xl bg-cr-sidebar px-4">
           {displayLogoUrl ? (
-            <div className="inline-block rounded-xl bg-white p-2">
+            <div className="rounded-xl p-2" style={{ backgroundColor: logoBg }}>
               <img src={displayLogoUrl} alt={store.name} className="h-9 max-w-[150px] object-contain" />
             </div>
           ) : (
@@ -189,7 +222,7 @@ function BrandSection() {
                   <button
                     onClick={confirmUpload}
                     disabled={uploading}
-                    className="rounded-lg bg-cr-ink px-3.5 py-2 text-xs font-bold text-white disabled:opacity-50"
+                    className="rounded-lg bg-cr-accent px-3.5 py-2 text-xs font-bold text-white disabled:opacity-50"
                   >
                     {uploading ? "Enviando..." : "Confirmar e usar essa logo"}
                   </button>
@@ -199,7 +232,7 @@ function BrandSection() {
                 </div>
               ) : (
                 <div className="flex gap-2">
-                  <button onClick={pickFile} className="rounded-lg bg-cr-ink px-3.5 py-2 text-xs font-bold text-white">
+                  <button onClick={pickFile} className="rounded-lg bg-cr-accent px-3.5 py-2 text-xs font-bold text-white">
                     {store.logoUrl ? "Trocar logo" : "Enviar logo"}
                   </button>
                   {store.logoUrl && (
@@ -221,6 +254,79 @@ function BrandSection() {
           )}
         </div>
       </div>
+
+      {isOwner && (
+        <div className="mt-5 grid grid-cols-2 gap-5 border-t border-cr-border-light pt-5">
+          <div>
+            <div className="text-[12px] font-bold">Cor de fundo da logo</div>
+            <div className="mt-0.5 text-[10.5px] text-cr-muted">O quadro atrás da sua logo no menu.</div>
+            <ColorPicker presets={LOGO_BG_PRESETS} value={logoBg} onChange={setLogoBg} />
+          </div>
+          <div>
+            <div className="text-[12px] font-bold">Cor de destaque do sistema</div>
+            <div className="mt-0.5 text-[10.5px] text-cr-muted">Usada em botões e destaques em todo o app.</div>
+            <ColorPicker presets={ACCENT_PRESETS} value={accent} onChange={setAccent} />
+            <button
+              type="button"
+              style={{ backgroundColor: accent }}
+              className="mt-2.5 rounded-lg px-3.5 py-2 text-xs font-bold text-white"
+            >
+              Botão de exemplo
+            </button>
+          </div>
+
+          {colorsChanged && (
+            <div className="col-span-2 flex items-center gap-2.5">
+              <button
+                onClick={saveColors}
+                disabled={savingColors}
+                className="rounded-lg bg-cr-accent px-3.5 py-2 text-xs font-bold text-white disabled:opacity-50"
+              >
+                {savingColors ? "Salvando..." : "Salvar cores"}
+              </button>
+              <button
+                onClick={() => {
+                  setLogoBg(store.logoBackgroundColor || "#ffffff");
+                  setAccent(store.primaryColor || "#121210");
+                  setColorsError(null);
+                }}
+                className="rounded-lg border border-cr-border px-3.5 py-2 text-xs font-bold"
+              >
+                Cancelar
+              </button>
+            </div>
+          )}
+          {colorsSaved && !colorsChanged && <div className="col-span-2 text-[11px] font-semibold text-cr-ink">Cores salvas.</div>}
+          {colorsError && <div className="col-span-2 text-[11px] font-semibold text-red-600">{colorsError}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ColorPicker({ presets, value, onChange }: { presets: string[]; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="mt-2.5 flex flex-wrap items-center gap-2">
+      {presets.map((color) => (
+        <button
+          key={color}
+          type="button"
+          onClick={() => onChange(color)}
+          title={color}
+          style={{ backgroundColor: color }}
+          className={`h-7 w-7 rounded-full border-2 ${value.toLowerCase() === color.toLowerCase() ? "border-cr-accent" : "border-cr-border"}`}
+        />
+      ))}
+      <label className="relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-cr-border">
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        />
+        <span className="pointer-events-none text-[13px]">🎨</span>
+      </label>
+      <span className="text-[11px] font-mono uppercase text-cr-muted">{value}</span>
     </div>
   );
 }

@@ -71,7 +71,7 @@ export function StepPayment({ device, tradeInModel, tradeInValue, info, onChange
                         paymentMethod: m.key === "creditoParcelado" ? (isParcelado ? info.paymentMethod : "credito2x") : m.key,
                       })
                     }
-                    className={`rounded-xl p-3 text-left ${sel ? "border-[1.6px] border-cr-ink bg-cr-ink text-white" : "border-[1.6px] border-cr-border bg-white text-cr-ink"}`}
+                    className={`rounded-xl p-3 text-left ${sel ? "border-[1.6px] border-cr-accent bg-cr-accent text-white" : "border-[1.6px] border-cr-border bg-white text-cr-ink"}`}
                   >
                     <div className="text-[13px] font-bold">{m.label}</div>
                     <div className="text-[11px] opacity-70">{m.sub}</div>
@@ -91,7 +91,7 @@ export function StepPayment({ device, tradeInModel, tradeInValue, info, onChange
                       key={f.key}
                       type="button"
                       onClick={() => onChange({ ...info, paymentMethod: f.key })}
-                      className={`rounded-[10px] px-3 py-2 ${sel ? "border-[1.4px] border-cr-ink bg-cr-ink text-white" : "border-[1.4px] border-cr-border bg-white text-cr-ink"}`}
+                      className={`rounded-[10px] px-3 py-2 ${sel ? "border-[1.4px] border-cr-accent bg-cr-accent text-white" : "border-[1.4px] border-cr-border bg-white text-cr-ink"}`}
                     >
                       <div className="text-xs font-bold">{n}x</div>
                       <div className="text-[10.5px] opacity-70">{formatCurrency(parcelValue)}/mês</div>
@@ -110,10 +110,10 @@ export function StepPayment({ device, tradeInModel, tradeInValue, info, onChange
                 <div
                   key={w.key}
                   onClick={() => onChange({ ...info, warrantyKey: w.key })}
-                  className={`flex cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 ${sel ? "border-[1.4px] border-cr-ink bg-cr-bg" : "border-[1.4px] border-cr-border bg-white"}`}
+                  className={`flex cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 ${sel ? "border-[1.4px] border-cr-accent bg-cr-bg" : "border-[1.4px] border-cr-border bg-white"}`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className={`h-[15px] w-[15px] flex-shrink-0 rounded-full border-[1.6px] ${sel ? "border-cr-ink bg-cr-ink" : "border-cr-dot"}`} />
+                    <div className={`h-[15px] w-[15px] flex-shrink-0 rounded-full border-[1.6px] ${sel ? "border-cr-accent bg-cr-accent" : "border-cr-dot"}`} />
                     <div>
                       <div className="text-[13px] font-bold">{w.label}</div>
                       <div className="text-[11.5px] text-cr-muted">{w.description}</div>
@@ -135,7 +135,7 @@ export function StepPayment({ device, tradeInModel, tradeInValue, info, onChange
           </div>
           <Row label="Garantia" value={warrantyPrice === 0 ? "Grátis" : formatCurrency(warrantyPrice)} />
           <Row label={currentFee ? `${currentFee.label} · taxa` : "Forma de pagamento"} value={feeValue === 0 ? "Sem taxa" : `+ ${formatCurrency(feeValue)}`} />
-          <div className="mt-1 flex items-center justify-between border-t border-cr-ink pt-2.5">
+          <div className="mt-1 flex items-center justify-between border-t border-cr-accent pt-2.5">
             <span className="text-sm font-bold">Total a cobrar</span>
             <span className="font-display text-xl font-bold">{formatCurrency(finalTotal)}</span>
           </div>

@@ -24,7 +24,7 @@ export function Estoque() {
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 rounded-xl bg-cr-ink px-[18px] py-2.5 text-[13px] font-bold text-white"
+          className="flex items-center gap-2 rounded-xl bg-cr-accent px-[18px] py-2.5 text-[13px] font-bold text-white"
         >
           + Adicionar item
         </button>
@@ -33,13 +33,13 @@ export function Estoque() {
       <div className="mt-4 flex gap-2">
         <button
           onClick={() => setTab("iphones")}
-          className={`rounded-[10px] px-[18px] py-2 text-[12.5px] font-bold ${tab === "iphones" ? "border-[1.4px] border-cr-ink bg-cr-ink text-white" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"}`}
+          className={`rounded-[10px] px-[18px] py-2 text-[12.5px] font-bold ${tab === "iphones" ? "border-[1.4px] border-cr-accent bg-cr-accent text-white" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"}`}
         >
           iPhones ({devices.length})
         </button>
         <button
           onClick={() => setTab("pecas")}
-          className={`rounded-[10px] px-[18px] py-2 text-[12.5px] font-bold ${tab === "pecas" ? "border-[1.4px] border-cr-ink bg-cr-ink text-white" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"}`}
+          className={`rounded-[10px] px-[18px] py-2 text-[12.5px] font-bold ${tab === "pecas" ? "border-[1.4px] border-cr-accent bg-cr-accent text-white" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"}`}
         >
           Peças ({parts.length})
         </button>
@@ -192,14 +192,14 @@ function AddItemModal({
           <button
             type="button"
             onClick={() => setKind("device")}
-            className={`rounded-lg px-3.5 py-2 text-xs font-bold ${kind === "device" ? "bg-cr-ink text-white" : "border border-cr-border text-cr-secondary"}`}
+            className={`rounded-lg px-3.5 py-2 text-xs font-bold ${kind === "device" ? "bg-cr-accent text-white" : "border border-cr-border text-cr-secondary"}`}
           >
             iPhone
           </button>
           <button
             type="button"
             onClick={() => setKind("part")}
-            className={`rounded-lg px-3.5 py-2 text-xs font-bold ${kind === "part" ? "bg-cr-ink text-white" : "border border-cr-border text-cr-secondary"}`}
+            className={`rounded-lg px-3.5 py-2 text-xs font-bold ${kind === "part" ? "bg-cr-accent text-white" : "border border-cr-border text-cr-secondary"}`}
           >
             Peça
           </button>
@@ -279,7 +279,7 @@ function AddItemModal({
           <button type="button" onClick={onClose} className="rounded-xl border border-cr-border px-4 py-2.5 text-xs font-bold">
             Cancelar
           </button>
-          <button disabled={saving} className="rounded-xl bg-cr-ink px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50">
+          <button disabled={saving} className="rounded-xl bg-cr-accent px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50">
             {saving ? "Adicionando..." : "Adicionar"}
           </button>
         </div>

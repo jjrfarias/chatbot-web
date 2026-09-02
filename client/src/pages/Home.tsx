@@ -57,7 +57,7 @@ export function Home() {
           className="flex flex-1 flex-col gap-3.5 rounded-2xl border border-cr-border bg-white p-[22px] transition-shadow hover:shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cr-ink">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cr-accent">
               <PhoneIcon className="h-5 w-5 text-white" />
             </div>
             <ArrowIcon className="h-[18px] w-[18px] text-cr-muted" />
@@ -72,7 +72,7 @@ export function Home() {
           className="flex flex-1 flex-col gap-3.5 rounded-2xl border border-cr-border bg-white p-[22px] transition-shadow hover:shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cr-ink">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cr-accent">
               <BoltIcon className="h-5 w-5 text-white" />
             </div>
             <ArrowIcon className="h-[18px] w-[18px] text-cr-muted" />

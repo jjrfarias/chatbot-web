@@ -43,7 +43,7 @@ export function Usuarios() {
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 rounded-xl bg-cr-ink px-[18px] py-2.5 text-[13px] font-bold text-white"
+          className="flex items-center gap-2 rounded-xl bg-cr-accent px-[18px] py-2.5 text-[13px] font-bold text-white"
         >
           + Adicionar colaborador
         </button>
@@ -52,7 +52,7 @@ export function Usuarios() {
       {owner && (
         <div className="mt-4 flex items-center justify-between rounded-[14px] border border-cr-border bg-white px-[18px] py-3.5">
           <div className="flex items-center gap-3">
-            <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-cr-ink font-display text-[13px] font-bold text-white">
+            <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-cr-accent font-display text-[13px] font-bold text-white">
               {initials(owner.name)}
             </div>
             <div>
@@ -60,7 +60,7 @@ export function Usuarios() {
               <div className="text-[11.5px] text-cr-muted">{owner.role}</div>
             </div>
           </div>
-          <span className="rounded-full bg-cr-ink px-3 py-1.5 text-[11px] font-semibold text-white">Acesso total</span>
+          <span className="rounded-full bg-cr-accent px-3 py-1.5 text-[11px] font-semibold text-white">Acesso total</span>
         </div>
       )}
 
@@ -204,7 +204,7 @@ function AddStaffModal({ onClose, onSaved }: { onClose: () => void; onSaved: () 
           </button>
           <button
             disabled={saving || !name.trim() || !email.trim() || password.length < 6}
-            className="rounded-xl bg-cr-ink px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50"
+            className="rounded-xl bg-cr-accent px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50"
           >
             {saving ? "Adicionando..." : "Adicionar"}
           </button>

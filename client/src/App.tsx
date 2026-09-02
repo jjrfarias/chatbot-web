@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
+import { ThemeInjector } from "./auth/ThemeInjector";
 import { Layout } from "./components/Layout";
 import { Login } from "./pages/Login";
 import { Home } from "./pages/Home";
@@ -19,6 +20,7 @@ import { Acoes } from "./pages/Acoes";
 function App() {
   return (
     <AuthProvider>
+      <ThemeInjector />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route element={<ProtectedRoute />}>

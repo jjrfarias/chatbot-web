@@ -4,7 +4,7 @@ export function StatCard({ label, value, dark }: { label: string; value: ReactNo
   return (
     <div
       className={`flex-1 rounded-[14px] border px-[18px] py-4 ${
-        dark ? "border-cr-ink bg-cr-ink text-white" : "border-cr-border bg-white text-cr-ink"
+        dark ? "border-cr-accent bg-cr-accent text-white" : "border-cr-border bg-white text-cr-ink"
       }`}
     >
       <div className={`text-[11.5px] font-semibold uppercase tracking-wide ${dark ? "text-cr-sidebar-muted" : "text-cr-muted"}`}>
@@ -18,7 +18,7 @@ export function StatCard({ label, value, dark }: { label: string; value: ReactNo
 export function Badge({ children, tone = "light" }: { children: ReactNode; tone?: "dark" | "light" | "muted" }) {
   const styles =
     tone === "dark"
-      ? "bg-cr-ink text-white"
+      ? "bg-cr-accent text-white"
       : tone === "muted"
         ? "bg-cr-chip text-cr-muted"
         : "bg-cr-chip text-cr-secondary";
@@ -39,7 +39,7 @@ export function Chip({
       type="button"
       onClick={onClick}
       className={`rounded-full px-3.5 py-2 text-[12.5px] font-semibold transition-colors ${
-        selected ? "border border-cr-ink bg-cr-ink text-white" : "border border-cr-border bg-white text-cr-secondary hover:border-cr-dot"
+        selected ? "border border-cr-accent bg-cr-accent text-white" : "border border-cr-border bg-white text-cr-secondary hover:border-cr-dot"
       }`}
     >
       {children}
@@ -65,7 +65,7 @@ export function PrimaryButton({
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className={`rounded-xl bg-cr-ink px-6 py-3 text-[13.5px] font-bold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-30 ${className}`}
+      className={`rounded-xl bg-cr-accent px-6 py-3 text-[13.5px] font-bold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-30 ${className}`}
     >
       {children}
     </button>
@@ -85,7 +85,7 @@ export function SecondaryButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl border-[1.6px] border-cr-ink px-6 py-3 text-[13.5px] font-bold text-cr-ink ${className}`}
+      className={`rounded-xl border-[1.6px] border-cr-accent px-6 py-3 text-[13.5px] font-bold text-cr-accent ${className}`}
     >
       {children}
     </button>
@@ -96,7 +96,7 @@ export function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: 
   return (
     <div
       onClick={() => onChange(!checked)}
-      className={`relative h-5 w-[34px] cursor-pointer rounded-full transition-colors ${checked ? "bg-cr-ink" : "bg-cr-border"}`}
+      className={`relative h-5 w-[34px] cursor-pointer rounded-full transition-colors ${checked ? "bg-cr-accent" : "bg-cr-border"}`}
     >
       <div
         className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${checked ? "left-4" : "left-0.5"}`}

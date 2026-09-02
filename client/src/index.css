@@ -11,6 +11,7 @@
   --color-cr-sidebar-muted: #9a998f;
   --color-cr-sidebar-border: #232320;
   --color-cr-ink: #121210;
+  --color-cr-accent: #121210;
   --color-cr-muted: #8c8a83;
   --color-cr-secondary: #56554f;
   --color-cr-border: #e1dfd8;
@@ -43,5 +44,5 @@ body {
   width: 100%;
 }
 .input:focus {
-  border-color: #121210;
+  border-color: var(--color-cr-accent);
 }

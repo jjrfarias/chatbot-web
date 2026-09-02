@@ -43,7 +43,7 @@ export function StepTradeIn({ hasTradeIn, onSetHasTradeIn, selected, onSelect, o
                 type="button"
                 onClick={() => onSelect(m)}
                 className={`rounded-2xl bg-white p-[18px] text-left transition-shadow ${
-                  selected?.id === m.id ? "border-[1.6px] border-cr-ink" : "border-[1.6px] border-cr-border"
+                  selected?.id === m.id ? "border-[1.6px] border-cr-accent" : "border-[1.6px] border-cr-border"
                 }`}
               >
                 <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-cr-chip">

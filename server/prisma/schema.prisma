@@ -13,6 +13,7 @@ model Store {
   name         String
   tagline      String?
   logoUrl      String?
+  logoBackgroundColor String?
   primaryColor String?
   address      String?
   phone        String?

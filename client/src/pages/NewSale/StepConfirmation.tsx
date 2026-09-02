@@ -44,7 +44,7 @@ export function StepConfirmation({
       <div className="flex justify-center">
         <div className="w-[480px] rounded-[20px] border border-cr-border bg-white p-8">
           <div className="flex flex-col items-center gap-2.5 text-center">
-            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-cr-ink">
+            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-cr-accent">
               <CheckIcon className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -107,7 +107,7 @@ export function StepConfirmation({
         </div>
       </div>
 
-      {linkedOpportunity && <div className="mt-3 flex items-center gap-3 rounded-xl border border-cr-border bg-white px-4 py-3"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cr-ink text-sm text-white">✓</div><div><div className="text-[11.5px] font-bold">Oportunidade vinculada</div><div className="text-[11px] text-cr-muted">“{linkedOpportunity.title}” será marcada como Venda concluída.</div></div></div>}
+      {linkedOpportunity && <div className="mt-3 flex items-center gap-3 rounded-xl border border-cr-border bg-white px-4 py-3"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cr-accent text-sm text-white">✓</div><div><div className="text-[11.5px] font-bold">Oportunidade vinculada</div><div className="text-[11px] text-cr-muted">“{linkedOpportunity.title}” será marcada como Venda concluída.</div></div></div>}
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 

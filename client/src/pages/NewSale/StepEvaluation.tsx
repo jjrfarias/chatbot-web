@@ -48,7 +48,7 @@ export function StepEvaluation({ tradeInModel, answers, onAnswer, onContinue }: 
                       onClick={() => onAnswer(category.id, option)}
                       className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
                         selected?.id === option.id
-                          ? "border-[1.3px] border-cr-ink bg-cr-ink text-white"
+                          ? "border-[1.3px] border-cr-accent bg-cr-accent text-white"
                           : "border-[1.3px] border-cr-border bg-white text-cr-secondary"
                       }`}
                     >
@@ -87,7 +87,7 @@ export function StepEvaluation({ tradeInModel, answers, onAnswer, onContinue }: 
               <span>Total de descontos</span>
               <span className="font-bold text-cr-ink">-{formatCurrency(totalDeductions)}</span>
             </div>
-            <div className="mt-1.5 flex items-center justify-between border-t border-cr-ink pt-1.5">
+            <div className="mt-1.5 flex items-center justify-between border-t border-cr-accent pt-1.5">
               <span className="text-[13.5px] font-bold">Valor da troca</span>
               <span className="font-display text-xl font-bold">{formatCurrency(finalValue)}</span>
             </div>
