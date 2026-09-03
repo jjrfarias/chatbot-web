@@ -47,7 +47,7 @@ export function Sidebar() {
             </div>
           ) : (
             <>
-              <div className="font-display text-[21px] font-bold text-white">{store?.name ?? "CR SMART"}</div>
+              <div className="font-display text-[21px] font-bold text-white">{store?.name ?? "UTI CEL"}</div>
               <div className="mt-[6px] text-[11px] text-[#6f6e68]">{store?.tagline ?? "Vendas & Assistência iPhone"}</div>
             </>
           )}

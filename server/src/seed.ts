@@ -4,7 +4,7 @@ import { hashPassword } from "./auth";
 
 const prisma = new PrismaClient();
 
-const DEFAULT_PASSWORD = "crsmart2026";
+const DEFAULT_PASSWORD = "uticel2026";
 
 const devices = [
   { name: "iPhone 15 Pro Max", color: "Titânio Natural", storage: "256GB", price: 8999 },
@@ -174,17 +174,22 @@ async function main() {
   await prisma.store.deleteMany();
 
   const store = await prisma.store.create({
-    data: { name: "CR Smart", tagline: "Vendas & Assistência iPhone" },
+    data: {
+      name: "UTI Cel",
+      tagline: "Vendas & Assistência Técnica",
+      primaryColor: "#0e7490",
+      logoBackgroundColor: "#0d0d0c",
+    },
   });
   const storeId = store.id;
 
   const passwordHash = await hashPassword(DEFAULT_PASSWORD);
   const staffRows = await Promise.all(
     [
-      { name: "Marcos Silva", email: "marcos@crsmart.com.br", role: "Dono da loja", isOwner: true, vendas: true, conserto: true, clientes: true, financeiro: true, estoque: true, config: true },
-      { name: "Ana Ferreira", email: "ana@crsmart.com.br", role: "Atendente", isOwner: false, vendas: true, conserto: false, clientes: true, financeiro: false, estoque: false, config: false },
-      { name: "Diego Martins", email: "diego@crsmart.com.br", role: "Técnico", isOwner: false, vendas: false, conserto: true, clientes: false, financeiro: false, estoque: true, config: false },
-      { name: "Camila Rocha", email: "camila@crsmart.com.br", role: "Atendente", isOwner: false, vendas: true, conserto: false, clientes: true, financeiro: false, estoque: false, config: false },
+      { name: "Bryan", email: "bryan@uticel.com.br", role: "Dono da loja", isOwner: true, vendas: true, conserto: true, clientes: true, financeiro: true, estoque: true, config: true },
+      { name: "Ana Ferreira", email: "ana@uticel.com.br", role: "Atendente", isOwner: false, vendas: true, conserto: false, clientes: true, financeiro: false, estoque: false, config: false },
+      { name: "Diego Martins", email: "diego@uticel.com.br", role: "Técnico", isOwner: false, vendas: false, conserto: true, clientes: false, financeiro: false, estoque: true, config: false },
+      { name: "Camila Rocha", email: "camila@uticel.com.br", role: "Atendente", isOwner: false, vendas: true, conserto: false, clientes: true, financeiro: false, estoque: false, config: false },
     ].map((s) => prisma.staffUser.create({ data: { ...s, storeId, passwordHash } })),
   );
   void staffRows;
@@ -251,7 +256,7 @@ async function main() {
   await prisma.sale.create({
     data: {
       storeId,
-      orderNumber: "CR-08421",
+      orderNumber: "UTI-08421",
       createdAt: new Date("2026-09-01T14:00:00"),
       customerId: customerRows.bruno.id,
       customerName: customerRows.bruno.name,
@@ -267,7 +272,7 @@ async function main() {
       tradeInDeductions: brunoDeductions,
       tradeInFinalValue: brunoTradeFinal,
       warrantyKey: "padrao",
-      warrantyLabel: "Padrão CR SMART · 3 meses",
+      warrantyLabel: "Padrão UTI Cel · 3 meses",
       warrantyPrice: 0,
       paymentMethod: "pix",
       paymentLabel: "Pix",
@@ -282,7 +287,7 @@ async function main() {
   await prisma.sale.create({
     data: {
       storeId,
-      orderNumber: "CR-05190",
+      orderNumber: "UTI-05190",
       createdAt: new Date("2023-01-10T11:00:00"),
       customerId: customerRows.bruno.id,
       customerName: customerRows.bruno.name,
@@ -304,7 +309,7 @@ async function main() {
   await prisma.sale.create({
     data: {
       storeId,
-      orderNumber: "CR-08390",
+      orderNumber: "UTI-08390",
       createdAt: new Date("2026-08-30T16:30:00"),
       customerId: customerRows.felipe.id,
       customerName: customerRows.felipe.name,
@@ -326,7 +331,7 @@ async function main() {
   await prisma.sale.create({
     data: {
       storeId,
-      orderNumber: "CR-07120",
+      orderNumber: "UTI-07120",
       createdAt: new Date("2026-07-15T10:00:00"),
       customerId: customerRows.rafael.id,
       customerName: customerRows.rafael.name,
@@ -406,7 +411,7 @@ async function main() {
 
   console.log("Seed concluído.");
   console.log(`Loja criada: ${store.name} (${store.id})`);
-  console.log(`Login: marcos@crsmart.com.br / ${DEFAULT_PASSWORD}`);
+  console.log(`Login: bryan@uticel.com.br / ${DEFAULT_PASSWORD}`);
 }
 
 main()

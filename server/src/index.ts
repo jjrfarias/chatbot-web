@@ -46,5 +46,5 @@ app.get(/^(?!\/api).*/, (_req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`CR Smart API rodando em http://localhost:${PORT}`);
+  console.log(`UTI Cel API rodando em http://localhost:${PORT}`);
 });

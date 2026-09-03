@@ -1,5 +1,5 @@
 export const WARRANTY_OPTIONS = [
-  { key: "padrao", label: "Padrão CR SMART · 3 meses", description: "Incluída em toda venda", price: 0 },
+  { key: "padrao", label: "Padrão UTI Cel · 3 meses", description: "Incluída em toda venda", price: 0 },
   { key: "estendida9", label: "Estendida · +9 meses", description: "Cobertura total de 12 meses", price: 149 },
   { key: "estendida21", label: "Estendida · +21 meses", description: "Cobertura total de 24 meses", price: 299 },
 ];
