@@ -20,8 +20,8 @@ export function Financeiro() {
   const maxVal = data ? Math.max(8000, ...data.chartDays.flatMap((d) => [d.entrada, d.saida])) : 8000;
 
   return (
-    <div className="mx-auto max-w-5xl px-11 py-6">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-5xl px-5 py-6 sm:px-8 lg:px-11">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="font-display text-[22px] font-bold">Financeiro</div>
           <div className="mt-0.5 text-[12.5px] text-cr-muted">Entradas e saídas de vendas e consertos</div>
@@ -43,13 +43,13 @@ export function Financeiro() {
 
       {data && (
         <>
-          <div className="mt-3.5 flex gap-3.5">
+          <div className="mt-3.5 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-3.5">
             <StatCard label="Entradas" value={formatCurrency(data.entradas)} />
             <StatCard label="Saídas" value={`− ${formatCurrency(data.saidas)}`} />
             <StatCard label="Saldo do período" value={formatCurrency(data.saldo)} dark />
           </div>
 
-          <div className="mt-3.5 flex gap-3.5">
+          <div className="mt-3.5 flex flex-col gap-3 sm:flex-row sm:gap-3.5">
             <div className="flex flex-1 items-center justify-between rounded-[14px] border border-cr-border bg-white px-4 py-3">
               <div>
                 <div className="text-[11px] font-semibold text-cr-muted">Vendas</div>
@@ -105,10 +105,10 @@ export function Financeiro() {
             <div className="text-[13px] font-bold">Últimos lançamentos</div>
             <div className="overflow-hidden rounded-[14px] border border-cr-border bg-white">
               <div className="flex items-center border-b border-cr-border px-4 py-2.5 text-[10.5px] font-bold uppercase text-cr-muted">
-                <div className="flex-1">Data</div>
+                <div className="hidden flex-1 sm:block">Data</div>
                 <div className="flex-1">Tipo</div>
                 <div className="flex-[2.4]">Descrição</div>
-                <div className="flex-[1.4]">Forma</div>
+                <div className="hidden flex-[1.4] md:block">Forma</div>
                 <div className="flex-1 text-right">Valor</div>
               </div>
               {data.ledger.length === 0 ? (
@@ -116,12 +116,12 @@ export function Financeiro() {
               ) : (
                 data.ledger.map((l, i) => (
                   <div key={i} className="flex items-center border-b border-cr-border-light px-4 py-2.5 last:border-0 hover:bg-cr-bg">
-                    <div className="flex-1 text-xs text-cr-secondary">{formatDate(l.date)}</div>
+                    <div className="hidden flex-1 text-xs text-cr-secondary sm:block">{formatDate(l.date)}</div>
                     <div className="flex-1">
                       <Badge tone={l.type === "Despesa" ? "muted" : "light"}>{l.type}</Badge>
                     </div>
-                    <div className="flex-[2.4] text-[12.5px] font-semibold">{l.description}</div>
-                    <div className="flex-[1.4] text-xs text-cr-secondary">{l.paymentMethod}</div>
+                    <div className="min-w-0 flex-[2.4] truncate text-[12.5px] font-semibold">{l.description}</div>
+                    <div className="hidden flex-[1.4] text-xs text-cr-secondary md:block">{l.paymentMethod}</div>
                     <div className="flex-1 text-right text-[12.5px] font-bold">
                       {l.value < 0 ? `− ${formatCurrency(Math.abs(l.value))}` : formatCurrency(l.value)}
                     </div>

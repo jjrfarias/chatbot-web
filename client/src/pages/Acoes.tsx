@@ -8,11 +8,11 @@ export function Acoes() {
   const [contact, setContact] = useState<CrmTask | null>(null);
   const load = () => api.getCrmActions().then(setActions);
   useEffect(() => { load(); }, []);
-  if (!actions) return <div className="px-11 py-8 text-sm text-cr-muted">Preparando ações...</div>;
+  if (!actions) return <div className="px-5 py-6 text-sm text-cr-muted sm:px-8 lg:px-11">Preparando ações...</div>;
   const total = actions.overdue.length + actions.today.length;
-  return <div className="mx-auto max-w-6xl px-11 py-7">
+  return <div className="mx-auto max-w-6xl px-5 py-6 sm:px-8 sm:py-7 lg:px-11">
     <div><h1 className="m-0 font-display text-2xl font-bold">Ações de hoje</h1><p className="mt-1 text-[12.5px] text-cr-muted">Retornos e acompanhamentos gerados automaticamente</p></div>
-    <div className="mt-5 grid grid-cols-3 gap-3"><Metric label="Prioridades" value={total} dark={total > 0} /><Metric label="Atrasadas" value={actions.overdue.length} /><Metric label="Próximos 7 dias" value={actions.upcoming.length} /></div>
+    <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3"><Metric label="Prioridades" value={total} dark={total > 0} /><Metric label="Atrasadas" value={actions.overdue.length} /><Metric label="Próximos 7 dias" value={actions.upcoming.length} /></div>
     <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3"><ActionColumn title="Atrasadas" tasks={actions.overdue} tone="danger" onComplete={async (task) => { await api.updateCrmTask(task.id, true); load(); }} onContact={setContact} /><ActionColumn title="Hoje" tasks={actions.today} tone="dark" onComplete={async (task) => { await api.updateCrmTask(task.id, true); load(); }} onContact={setContact} /><ActionColumn title="Próximos dias" tasks={actions.upcoming} onComplete={async (task) => { await api.updateCrmTask(task.id, true); load(); }} onContact={setContact} /></div>
     {contact?.customer && <WhatsAppComposer customerId={contact.customer.id} customerName={contact.customer.name} phone={contact.customer.phone} recommendedKey={templateFor(contact)} variables={{ modelo: contact.opportunity?.title ?? "", valor: contact.opportunity ? contact.opportunity.value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "", status: contact.opportunity?.stage.replaceAll("_", " ") ?? "" }} onClose={() => setContact(null)} onSent={load} />}
   </div>;

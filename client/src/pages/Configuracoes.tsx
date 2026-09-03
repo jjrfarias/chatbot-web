@@ -33,8 +33,8 @@ export function Configuracoes() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-11 py-7">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-5xl px-5 py-6 sm:px-8 sm:py-7 lg:px-11">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="font-display text-xl font-bold">Configurações</div>
           <div className="mt-0.5 text-[12.5px] text-cr-muted">Marca da loja, taxas, valores de troca e mensagens de atendimento</div>
@@ -48,7 +48,7 @@ export function Configuracoes() {
 
       <BrandSection />
 
-      <div className="mt-5 grid grid-cols-2 gap-5">
+      <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div className="flex flex-col gap-1 rounded-2xl border border-cr-border bg-white p-[18px]">
           <div className="mb-2 text-sm font-bold">Taxas das maquininhas</div>
           {fees.map((f) => (
@@ -94,7 +94,7 @@ export function Configuracoes() {
       <div className="mt-5 rounded-2xl border border-cr-border bg-white p-[18px]">
         <div className="text-sm font-bold">Modelos de mensagem do WhatsApp</div>
         <div className="mt-1 text-[10.5px] text-cr-muted">Use {`{{nome}}, {{modelo}}, {{valor}} e {{status}}`} para preencher dados automaticamente.</div>
-        <div className="mt-4 grid grid-cols-2 gap-3">{templates.map((item) => <div key={item.id} className="rounded-xl border border-cr-border-light p-3"><div className="flex items-center justify-between"><div><div className="text-[12px] font-bold">{item.name}</div><div className="text-[9.5px] uppercase text-cr-muted">{item.category}</div></div><label className="flex items-center gap-1.5 text-[10.5px] text-cr-muted"><input type="checkbox" checked={item.active} onChange={(e) => setTemplates((current) => current.map((template) => template.id === item.id ? { ...template, active: e.target.checked } : template))} /> Ativo</label></div><textarea value={item.content} onChange={(e) => setTemplates((current) => current.map((template) => template.id === item.id ? { ...template, content: e.target.value } : template))} className="input mt-2 min-h-24 resize-none text-[11.5px] leading-relaxed" /></div>)}</div>
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">{templates.map((item) => <div key={item.id} className="rounded-xl border border-cr-border-light p-3"><div className="flex items-center justify-between"><div><div className="text-[12px] font-bold">{item.name}</div><div className="text-[9.5px] uppercase text-cr-muted">{item.category}</div></div><label className="flex items-center gap-1.5 text-[10.5px] text-cr-muted"><input type="checkbox" checked={item.active} onChange={(e) => setTemplates((current) => current.map((template) => template.id === item.id ? { ...template, active: e.target.checked } : template))} /> Ativo</label></div><textarea value={item.content} onChange={(e) => setTemplates((current) => current.map((template) => template.id === item.id ? { ...template, content: e.target.value } : template))} className="input mt-2 min-h-24 resize-none text-[11.5px] leading-relaxed" /></div>)}</div>
       </div>
     </div>
   );
@@ -206,8 +206,8 @@ function BrandSection() {
         Envie a logo da sua loja. Ela aparece no menu lateral exatamente como no preview abaixo.
       </div>
 
-      <div className="mt-4 flex items-center gap-5">
-        <div className="flex h-24 w-52 flex-shrink-0 items-center justify-center rounded-xl bg-cr-sidebar px-4">
+      <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-center">
+        <div className="flex h-24 w-full flex-shrink-0 items-center justify-center rounded-xl bg-cr-sidebar px-4 sm:w-52">
           {displayLogoUrl ? (
             <div className="rounded-xl p-2" style={{ backgroundColor: logoBg }}>
               <img
@@ -266,7 +266,7 @@ function BrandSection() {
       </div>
 
       {isOwner && (
-        <div className="mt-5 grid grid-cols-2 gap-5 border-t border-cr-border-light pt-5">
+        <div className="mt-5 grid grid-cols-1 gap-5 border-t border-cr-border-light pt-5 sm:grid-cols-2">
           <div>
             <div className="text-[12px] font-bold">Cor de fundo da logo</div>
             <div className="mt-0.5 text-[10.5px] text-cr-muted">O quadro atrás da sua logo no menu.</div>
@@ -301,7 +301,7 @@ function BrandSection() {
           </div>
 
           {colorsChanged && (
-            <div className="col-span-2 flex items-center gap-2.5">
+            <div className="sm:col-span-2 flex items-center gap-2.5">
               <button
                 onClick={saveColors}
                 disabled={savingColors}
@@ -322,8 +322,8 @@ function BrandSection() {
               </button>
             </div>
           )}
-          {colorsSaved && !colorsChanged && <div className="col-span-2 text-[11px] font-semibold text-cr-ink">Marca salva.</div>}
-          {colorsError && <div className="col-span-2 text-[11px] font-semibold text-red-600">{colorsError}</div>}
+          {colorsSaved && !colorsChanged && <div className="sm:col-span-2 text-[11px] font-semibold text-cr-ink">Marca salva.</div>}
+          {colorsError && <div className="sm:col-span-2 text-[11px] font-semibold text-red-600">{colorsError}</div>}
         </div>
       )}
     </div>

@@ -38,27 +38,27 @@ export function Clientes() {
   const avgTicket = customers.length ? customers.reduce((s, c) => s + c.totalSpent, 0) / customers.length : 0;
 
   return (
-    <div className="mx-auto max-w-6xl px-11 py-8">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-6xl px-5 py-6 sm:px-8 sm:py-8 lg:px-11">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="font-display text-2xl font-bold">Clientes</div>
           <div className="mt-0.5 text-[12.5px] text-cr-muted">Toque em um cliente para ver o perfil completo</div>
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 rounded-xl bg-cr-accent px-5 py-3 text-[13px] font-bold text-white"
+          className="flex items-center justify-center gap-2 rounded-xl bg-cr-accent px-5 py-3 text-[13px] font-bold text-white"
         >
           + Novo cliente
         </button>
       </div>
 
-      <div className="mt-5 flex gap-5">
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-5">
         <StatCard label="Total de clientes" value={customers.length} />
         <StatCard label="Novos este mês" value={newThisMonth} />
         <StatCard label="Ticket médio por cliente" value={formatCurrency(avgTicket)} />
       </div>
 
-      <div className="mt-5 flex w-[360px] items-center gap-2.5 rounded-full border border-cr-border bg-white px-[18px] py-[11px]">
+      <div className="mt-5 flex w-full items-center gap-2.5 rounded-full border border-cr-border bg-white px-[18px] py-[11px] sm:w-[360px]">
         <SearchIcon className="h-[15px] w-[15px] text-cr-muted" />
         <input
           value={search}
@@ -71,10 +71,10 @@ export function Clientes() {
       <div className="mt-5 overflow-hidden rounded-[14px] border border-cr-border bg-white">
         <div className="flex items-center border-b border-cr-border px-[18px] py-[11px] text-[11px] font-bold uppercase tracking-wide text-cr-muted">
           <div className="flex-[2]">Cliente</div>
-          <div className="flex-[1.4]">Telefone</div>
-          <div className="flex-[1.4]">CPF</div>
+          <div className="hidden flex-[1.4] sm:block">Telefone</div>
+          <div className="hidden flex-[1.4] md:block">CPF</div>
           <div className="flex-[1.2]">Total gasto</div>
-          <div className="flex-[1.2]">Última visita</div>
+          <div className="hidden flex-[1.2] md:block">Última visita</div>
           <div className="flex-[0.9] text-right">Status</div>
         </div>
         {loading ? (
@@ -88,16 +88,16 @@ export function Clientes() {
               onClick={() => navigate(`/clientes/${c.id}`)}
               className="flex cursor-pointer items-center border-b border-cr-border-light px-[18px] py-3.5 last:border-0 hover:bg-cr-bg"
             >
-              <div className="flex flex-[2] items-center gap-2.5">
-                <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-cr-chip font-display text-[11.5px] font-bold">
+              <div className="flex min-w-0 flex-[2] items-center gap-2.5">
+                <div className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-full bg-cr-chip font-display text-[11.5px] font-bold">
                   {initials(c.name)}
                 </div>
-                <span className="text-[13px] font-semibold">{c.name}</span>
+                <span className="truncate text-[13px] font-semibold">{c.name}</span>
               </div>
-              <div className="flex-[1.4] text-[12.5px] text-cr-secondary">{c.phone}</div>
-              <div className="flex-[1.4] text-[12.5px] text-cr-secondary">{maskCpf(c.cpf)}</div>
+              <div className="hidden flex-[1.4] text-[12.5px] text-cr-secondary sm:block">{c.phone}</div>
+              <div className="hidden flex-[1.4] text-[12.5px] text-cr-secondary md:block">{maskCpf(c.cpf)}</div>
               <div className="flex-[1.2] text-[12.5px] font-semibold">{formatCurrency(c.totalSpent)}</div>
-              <div className="flex-[1.2] text-[12.5px] text-cr-secondary">
+              <div className="hidden flex-[1.2] text-[12.5px] text-cr-secondary md:block">
                 {c.lastVisit ? formatDate(c.lastVisit) : "—"}
               </div>
               <div className="flex-[0.9] text-right">

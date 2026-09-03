@@ -35,24 +35,24 @@ export function Usuarios() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-11 py-6">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-5xl px-5 py-6 sm:px-8 lg:px-11">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="font-display text-[22px] font-bold">Usuários e permissões</div>
           <div className="mt-0.5 text-[12.5px] text-cr-muted">Defina o que cada colaborador pode acessar no app</div>
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 rounded-xl bg-cr-accent px-[18px] py-2.5 text-[13px] font-bold text-white"
+          className="flex items-center justify-center gap-2 rounded-xl bg-cr-accent px-[18px] py-2.5 text-[13px] font-bold text-white"
         >
           + Adicionar colaborador
         </button>
       </div>
 
       {owner && (
-        <div className="mt-4 flex items-center justify-between rounded-[14px] border border-cr-border bg-white px-[18px] py-3.5">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-[14px] border border-cr-border bg-white px-[18px] py-3.5">
           <div className="flex items-center gap-3">
-            <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-cr-accent font-display text-[13px] font-bold text-white">
+            <div className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full bg-cr-accent font-display text-[13px] font-bold text-white">
               {initials(owner.name)}
             </div>
             <div>
@@ -67,7 +67,7 @@ export function Usuarios() {
       <div className="mt-4 flex flex-col gap-2">
         <div className="text-[13px] font-bold">Colaboradores</div>
         <div className="overflow-hidden rounded-[14px] border border-cr-border bg-white">
-          <div className="flex items-center border-b border-cr-border px-[18px] py-2.5 text-[10.5px] font-bold uppercase text-cr-muted">
+          <div className="hidden items-center border-b border-cr-border px-[18px] py-2.5 text-[10.5px] font-bold uppercase text-cr-muted sm:flex">
             <div className="flex-[1.8]">Colaborador</div>
             {PERMISSIONS.map((p) => (
               <div key={p.key} className="flex-1 text-center">
@@ -76,9 +76,9 @@ export function Usuarios() {
             ))}
           </div>
           {collaborators.map((c) => (
-            <div key={c.id} className="flex items-center border-b border-cr-border-light px-[18px] py-3.5 last:border-0 hover:bg-cr-bg">
+            <div key={c.id} className="flex flex-col gap-3 border-b border-cr-border-light px-[18px] py-3.5 last:border-0 hover:bg-cr-bg sm:flex-row sm:items-center sm:gap-0">
               <div className="flex flex-[1.8] items-center gap-2.5">
-                <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-cr-chip font-display text-[11px] font-bold">
+                <div className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-full bg-cr-chip font-display text-[11px] font-bold">
                   {initials(c.name)}
                 </div>
                 <div className="min-w-0">
@@ -88,11 +88,14 @@ export function Usuarios() {
                   </div>
                 </div>
               </div>
-              {PERMISSIONS.map((p) => (
-                <div key={p.key} className="flex flex-1 justify-center">
-                  <Toggle checked={c[p.key]} onChange={(v) => togglePermission(c.id, p.key, v)} />
-                </div>
-              ))}
+              <div className="grid grid-cols-3 gap-2 sm:contents">
+                {PERMISSIONS.map((p) => (
+                  <div key={p.key} className="flex items-center justify-between gap-1.5 rounded-lg bg-cr-bg px-2.5 py-1.5 sm:flex sm:flex-1 sm:justify-center sm:bg-transparent sm:px-0 sm:py-0">
+                    <span className="text-[10px] font-semibold text-cr-muted sm:hidden">{p.label}</span>
+                    <Toggle checked={c[p.key]} onChange={(v) => togglePermission(c.id, p.key, v)} />
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>

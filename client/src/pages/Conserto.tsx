@@ -74,7 +74,7 @@ export function Conserto() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-11 py-7">
+    <div className="mx-auto max-w-5xl px-5 py-6 sm:px-8 sm:py-7 lg:px-11">
       <div>
         <div className="font-display text-xl font-bold">Receber aparelho para conserto</div>
         <div className="mt-0.5 text-[12.5px] text-cr-muted">Registre o modelo e os defeitos identificados no recebimento</div>
@@ -140,7 +140,7 @@ export function Conserto() {
               <div className="text-[13.5px] font-bold">Defeitos identificados</div>
               <span className="text-[11px] text-cr-muted">toque para marcar</span>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {defectOptions.map((d) => {
                 const sel = !!selectedDefects[d.id];
                 return (

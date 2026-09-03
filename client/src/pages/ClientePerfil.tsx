@@ -16,16 +16,16 @@ export function ClientePerfil() {
   const load = useCallback(() => { if (id) api.getCustomer(id).then(setCustomer); }, [id]);
   useEffect(load, [load]);
 
-  if (!customer) return <div className="px-11 py-8 text-sm text-cr-muted">Carregando...</div>;
+  if (!customer) return <div className="px-5 py-6 text-sm text-cr-muted sm:px-8 lg:px-11">Carregando...</div>;
 
   return (
-    <div className="mx-auto max-w-6xl px-11 py-7">
+    <div className="mx-auto max-w-6xl px-5 py-6 sm:px-8 sm:py-7 lg:px-11">
       <Link to="/clientes" className="flex items-center gap-2.5 text-[12.5px] font-semibold text-cr-muted hover:text-cr-secondary">
         <BackIcon className="h-4 w-4" /> Voltar para clientes
       </Link>
 
-      <div className="mt-4 flex gap-5">
-        <div className="flex w-80 flex-shrink-0 flex-col gap-3.5">
+      <div className="mt-4 flex flex-col gap-5 lg:flex-row">
+        <div className="flex w-full flex-col gap-3.5 lg:w-80 lg:flex-shrink-0">
           <div className="flex flex-col items-center gap-2.5 rounded-2xl border border-cr-border bg-white p-[22px] text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-cr-accent font-display text-[22px] font-bold text-white">
               {initials(customer.name)}
@@ -83,14 +83,12 @@ export function ClientePerfil() {
               <p className="p-5 text-sm text-cr-muted">Nenhum atendimento registrado ainda.</p>
             ) : (
               customer.history.map((h, i) => (
-                <div key={i} className="flex items-center border-b border-cr-border-light px-[18px] py-3.5 last:border-0 hover:bg-cr-bg">
-                  <div className="flex-1">
-                    <Badge>{h.type}</Badge>
-                  </div>
-                  <div className="flex-[2.4] text-[13px] font-semibold">{h.detail}</div>
-                  <div className="flex-[1.6] text-[12.5px] text-cr-secondary">{formatDate(h.date)}</div>
-                  <div className="flex-1 text-[13px] font-semibold">{formatCurrency(h.value)}</div>
-                  <div className="flex-1 text-right">
+                <div key={i} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-cr-border-light px-[18px] py-3.5 last:border-0 hover:bg-cr-bg">
+                  <Badge>{h.type}</Badge>
+                  <div className="min-w-0 flex-[2.4] truncate text-[13px] font-semibold">{h.detail}</div>
+                  <div className="hidden flex-[1.6] text-[12.5px] text-cr-secondary sm:block">{formatDate(h.date)}</div>
+                  <div className="text-[13px] font-semibold">{formatCurrency(h.value)}</div>
+                  <div className="ml-auto">
                     <Badge tone={h.status.includes("concluíd") ? "dark" : "light"}>{h.status}</Badge>
                   </div>
                 </div>
@@ -209,9 +207,9 @@ function EditCustomerModal({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex-1 rounded-[14px] border border-cr-border bg-white p-3.5">
-      <div className="text-[10.5px] font-semibold uppercase text-cr-muted">{label}</div>
-      <div className="mt-0.5 font-display text-[19px] font-bold">{value}</div>
+    <div className="min-w-0 flex-1 rounded-[14px] border border-cr-border bg-white p-3.5">
+      <div className="truncate text-[10.5px] font-semibold uppercase text-cr-muted">{label}</div>
+      <div className="truncate font-display text-[19px] font-bold">{value}</div>
     </div>
   );
 }
@@ -239,9 +237,9 @@ function CrmPanel({ customer, reload }: { customer: CustomerDetail; reload: () =
     setTag(""); reload();
   }
 
-  return <div className="mb-3 grid grid-cols-2 gap-3">
-    <div className="col-span-2 rounded-2xl border border-cr-border bg-white p-4">
-      <div className="flex items-center justify-between"><div className="text-sm font-bold">Relacionamento</div><div className="flex flex-wrap justify-end gap-1.5">{customer.tags.map((item) => <span key={item.id} className="rounded-full bg-cr-chip px-2.5 py-1 text-[10.5px] font-semibold">{item.name}</span>)}</div></div>
+  return <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div className="sm:col-span-2 rounded-2xl border border-cr-border bg-white p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2"><div className="text-sm font-bold">Relacionamento</div><div className="flex flex-wrap justify-end gap-1.5">{customer.tags.map((item) => <span key={item.id} className="rounded-full bg-cr-chip px-2.5 py-1 text-[10.5px] font-semibold">{item.name}</span>)}</div></div>
       <form onSubmit={saveTag} className="mt-3 flex gap-2"><input value={tag} onChange={(e) => setTag(e.target.value)} required className="input" placeholder="Nova etiqueta" /><button className="rounded-lg border border-cr-border px-3 text-xs font-bold">Adicionar</button></form>
     </div>
     <form onSubmit={saveInteraction} className="rounded-2xl border border-cr-border bg-white p-4">
@@ -256,7 +254,7 @@ function CrmPanel({ customer, reload }: { customer: CustomerDetail; reload: () =
       <input value={dueAt} onChange={(e) => setDueAt(e.target.value)} required type="datetime-local" className="input mt-2" />
       <button className="mt-2 rounded-lg bg-cr-accent px-3 py-2 text-[11px] font-bold text-white">Criar tarefa</button>
     </form>
-    {(customer.tasks.length > 0 || customer.interactions.length > 0) && <div className="col-span-2 rounded-2xl border border-cr-border bg-white">
+    {(customer.tasks.length > 0 || customer.interactions.length > 0) && <div className="sm:col-span-2 rounded-2xl border border-cr-border bg-white">
       <div className="border-b border-cr-border px-4 py-3 text-[12px] font-bold">Atividades recentes</div>
       {customer.tasks.filter((item) => !item.completed).slice(0, 3).map((item) => <div key={item.id} className="flex items-center gap-2 border-b border-cr-border-light px-4 py-2.5 text-[11.5px]"><button onClick={async () => { await api.updateCrmTask(item.id, true); reload(); }} className="h-4 w-4 rounded border border-cr-muted" /><span className="flex-1 font-semibold">{item.title}</span><span className="text-cr-muted">{formatDate(item.dueAt)}</span></div>)}
       {customer.interactions.slice(0, 4).map((item) => <div key={item.id} className="border-b border-cr-border-light px-4 py-2.5 last:border-0"><div className="flex justify-between text-[10px] uppercase text-cr-muted"><span>{item.type}</span><span>{formatDate(item.createdAt)}</span></div><div className="mt-1 text-[11.5px] text-cr-secondary">{item.content}</div></div>)}

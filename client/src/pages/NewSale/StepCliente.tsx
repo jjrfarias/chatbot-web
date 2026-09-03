@@ -85,7 +85,7 @@ export function StepCliente({ value, onChange, onContinue }: Props) {
           </div>
         </div>
       ) : (
-        <div className="mt-4 flex w-[460px] flex-col gap-3.5 rounded-2xl border border-cr-border bg-white p-[22px]">
+        <div className="mt-4 flex w-full flex-col gap-3.5 rounded-2xl border border-cr-border bg-white p-[22px] sm:w-[460px]">
           <Field label="Nome completo">
             <input
               value={value.name}
