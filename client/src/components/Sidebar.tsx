@@ -19,7 +19,9 @@ const links: { to: string; label: string; icon: typeof HomeIcon; permission?: Pe
   { to: "/configuracoes", label: "Configurações", icon: GearIcon, permission: "config" },
 ];
 
-export function Sidebar() {
+type SidebarProps = { open?: boolean; onNavigate?: () => void };
+
+export function Sidebar({ open = false, onNavigate }: SidebarProps) {
   const { session, logout } = useAuth();
   const user = session?.user;
   const store = session?.store;
@@ -33,7 +35,11 @@ export function Sidebar() {
   });
 
   return (
-    <aside className="flex h-screen w-[220px] flex-shrink-0 flex-col justify-between bg-cr-sidebar px-[18px] py-7 print:hidden">
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 flex h-screen w-[240px] flex-shrink-0 flex-col justify-between overflow-y-auto bg-cr-sidebar px-[18px] py-7 shadow-2xl transition-transform duration-200 ease-out print:hidden lg:static lg:z-auto lg:w-[220px] lg:translate-x-0 lg:shadow-none ${
+        open ? "translate-x-0" : "-translate-x-full"
+      }`}
+    >
       <div className="flex flex-col gap-9">
         <div className="flex flex-col items-center text-center">
           {store?.logoUrl ? (
@@ -59,6 +65,7 @@ export function Sidebar() {
               key={to}
               to={to}
               end={to === "/"}
+              onClick={onNavigate}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-[10px] px-3 py-[11px] text-[13.5px] transition-colors ${
                   isActive ? "bg-cr-accent font-semibold text-white" : "font-medium text-cr-sidebar-muted hover:bg-cr-sidebar-hover"
