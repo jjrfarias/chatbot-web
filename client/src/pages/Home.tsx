@@ -31,15 +31,15 @@ export function Home() {
   const dateLabel = `${WEEKDAYS[now.getDay()]}, ${now.getDate()} de ${MONTHS[now.getMonth()]}`;
 
   return (
-    <div className="mx-auto max-w-5xl px-11 py-9">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-5xl px-5 py-6 sm:px-8 sm:py-9 lg:px-11">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="font-display text-2xl font-bold">Bom dia, {firstName}</div>
           <div className="mt-0.5 text-[13px] capitalize text-cr-muted">{dateLabel}</div>
         </div>
         <form
           onSubmit={submitSearch}
-          className="flex w-[260px] items-center gap-2.5 rounded-full border border-cr-border bg-white px-4 py-2.5"
+          className="flex w-full items-center gap-2.5 rounded-full border border-cr-border bg-white px-4 py-2.5 sm:w-[260px]"
         >
           <SearchIcon className="h-[15px] w-[15px] flex-shrink-0 text-cr-muted" />
           <input
@@ -51,7 +51,7 @@ export function Home() {
         </form>
       </div>
 
-      <div className="mt-6 flex gap-5">
+      <div className="mt-6 flex flex-col gap-3.5 sm:flex-row sm:gap-5">
         <Link
           to="/nova-venda"
           className="flex flex-1 flex-col gap-3.5 rounded-2xl border border-cr-border bg-white p-[22px] transition-shadow hover:shadow-sm"
@@ -86,7 +86,7 @@ export function Home() {
 
       {summary && (
         <>
-          <div className="mt-5 flex gap-5">
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-5">
             <StatCard label="Vendas hoje" value={summary.vendasHoje} />
             <StatCard label="Consertos em andamento" value={summary.consertosAndamento} />
             <StatCard label="Ticket médio" value={formatCurrency(summary.ticketMedio)} />
@@ -99,14 +99,12 @@ export function Home() {
                 <p className="p-5 text-sm text-cr-muted">Nenhum atendimento registrado ainda.</p>
               ) : (
                 summary.recentes.map((r, i) => (
-                  <div key={i} className="flex items-center border-b border-cr-border-light px-[18px] py-3.5 last:border-0 hover:bg-cr-bg">
-                    <div className="flex-[2] text-[13px] font-semibold">{r.name}</div>
-                    <div className="flex-1">
-                      <Badge>{r.type}</Badge>
-                    </div>
-                    <div className="flex-[2] text-[13px] text-cr-secondary">{r.detail}</div>
+                  <div key={i} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-cr-border-light px-[18px] py-3.5 last:border-0 hover:bg-cr-bg">
+                    <div className="min-w-0 flex-[2] truncate text-[13px] font-semibold">{r.name}</div>
+                    <Badge>{r.type}</Badge>
+                    <div className="min-w-0 flex-1 truncate text-[13px] text-cr-secondary">{r.detail}</div>
                     <div className="flex-1 text-[13px] font-semibold">{formatCurrency(r.value)}</div>
-                    <div className="flex-1 text-right">
+                    <div className="ml-auto">
                       <Badge tone={r.status.includes("concluíd") ? "dark" : "light"}>{r.status}</Badge>
                     </div>
                   </div>
