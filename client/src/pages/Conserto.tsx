@@ -4,7 +4,7 @@ import type { CustomerSummary, DefectOption, Repair } from "../types";
 import { Chip, PrimaryButton } from "../components/ui";
 import { WhatsAppComposer } from "../components/WhatsAppComposer";
 
-const MODELS = ["iPhone 12", "iPhone 13", "iPhone 14", "iPhone 14 Pro", "iPhone 15", "iPhone 15 Pro"];
+const MODEL_SUGGESTIONS = ["iPhone 13", "iPhone 15", "Galaxy S23", "Galaxy A54", "Redmi Note 12", "Moto G84"];
 const REPAIR_STATUSES = ["Recebido", "Em diagnóstico", "Aguardando aprovação", "Em andamento", "Aguardando peça", "Concluído", "Cancelado"];
 
 export function Conserto() {
@@ -13,7 +13,7 @@ export function Conserto() {
   const [customers, setCustomers] = useState<CustomerSummary[]>([]);
   const [repairs, setRepairs] = useState<Repair[]>([]);
 
-  const [model, setModel] = useState(MODELS[0]);
+  const [model, setModel] = useState("");
   const [color, setColor] = useState("");
   const [imei, setImei] = useState("");
   const [customerName, setCustomerName] = useState("");
@@ -40,7 +40,7 @@ export function Conserto() {
 
   const chosenDefects = defectOptions.filter((d) => selectedDefects[d.id]);
   const budget = chosenDefects.reduce((s, d) => s + d.price, 0);
-  const canSubmit = customerName.trim().length > 1 && !!deadlineLabel && (customerMode === "existente" ? !!customerId : customerPhone.replace(/\D/g, "").length >= 10);
+  const canSubmit = customerName.trim().length > 1 && model.trim().length > 0 && !!deadlineLabel && (customerMode === "existente" ? !!customerId : customerPhone.replace(/\D/g, "").length >= 10);
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -90,8 +90,9 @@ export function Conserto() {
         <div className="flex flex-col gap-3.5">
           <div className="flex flex-col gap-3 rounded-2xl border border-cr-border bg-white p-[18px]">
             <div className="text-[13.5px] font-bold">Modelo do aparelho</div>
+            <input value={model} onChange={(e) => setModel(e.target.value)} placeholder="Ex: Galaxy S23, iPhone 13, Redmi Note 12..." className="input" />
             <div className="flex flex-wrap gap-1.5">
-              {MODELS.map((m) => (
+              {MODEL_SUGGESTIONS.map((m) => (
                 <button
                   key={m}
                   type="button"

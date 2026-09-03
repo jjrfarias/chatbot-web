@@ -31,7 +31,7 @@ export function Login() {
       <form onSubmit={submit} className="w-full max-w-sm rounded-2xl border border-cr-border bg-white p-8">
         <div className="text-center">
           <div className="font-display text-2xl font-bold">
-            CR <span className="font-normal text-cr-muted">SMART</span>
+            UTI <span className="font-normal text-cr-muted">CEL</span>
           </div>
           <div className="mt-1 text-[12.5px] text-cr-muted">Entre para acessar sua loja</div>
         </div>

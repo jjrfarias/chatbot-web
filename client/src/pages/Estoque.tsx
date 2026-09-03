@@ -5,7 +5,7 @@ import type { InventoryDevice, InventoryPart } from "../types";
 import { Badge } from "../components/ui";
 
 export function Estoque() {
-  const [tab, setTab] = useState<"iphones" | "pecas">("iphones");
+  const [tab, setTab] = useState<"aparelhos" | "pecas">("aparelhos");
   const [devices, setDevices] = useState<InventoryDevice[]>([]);
   const [parts, setParts] = useState<InventoryPart[]>([]);
   const [showAdd, setShowAdd] = useState(false);
@@ -32,10 +32,10 @@ export function Estoque() {
 
       <div className="mt-4 flex gap-2">
         <button
-          onClick={() => setTab("iphones")}
-          className={`rounded-[10px] px-[18px] py-2 text-[12.5px] font-bold ${tab === "iphones" ? "border-[1.4px] border-cr-accent bg-cr-accent text-white" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"}`}
+          onClick={() => setTab("aparelhos")}
+          className={`rounded-[10px] px-[18px] py-2 text-[12.5px] font-bold ${tab === "aparelhos" ? "border-[1.4px] border-cr-accent bg-cr-accent text-white" : "border-[1.4px] border-cr-border bg-white text-cr-secondary"}`}
         >
-          iPhones ({devices.length})
+          Aparelhos ({devices.length})
         </button>
         <button
           onClick={() => setTab("pecas")}
@@ -45,7 +45,7 @@ export function Estoque() {
         </button>
       </div>
 
-      {tab === "iphones" ? (
+      {tab === "aparelhos" ? (
         <div className="mt-4 overflow-hidden rounded-[14px] border border-cr-border bg-white">
           <div className="flex items-center border-b border-cr-border px-4 py-2.5 text-[10.5px] font-bold uppercase text-cr-muted">
             <div className="flex-[2.2]">Modelo</div>
@@ -107,7 +107,7 @@ export function Estoque() {
 
       {showAdd && (
         <AddItemModal
-          initialKind={tab === "iphones" ? "device" : "part"}
+          initialKind={tab === "aparelhos" ? "device" : "part"}
           onClose={() => setShowAdd(false)}
           onSavedDevice={(device) => {
             setDevices((prev) => [...prev, device]);
@@ -194,7 +194,7 @@ function AddItemModal({
             onClick={() => setKind("device")}
             className={`rounded-lg px-3.5 py-2 text-xs font-bold ${kind === "device" ? "bg-cr-accent text-white" : "border border-cr-border text-cr-secondary"}`}
           >
-            iPhone
+            Aparelho
           </button>
           <button
             type="button"
@@ -209,7 +209,7 @@ function AddItemModal({
           <div key="device-fields" className="mt-4 grid grid-cols-2 gap-3">
             <label className="col-span-2 text-xs font-semibold text-cr-muted">
               Modelo
-              <input required name="name" className="input mt-1" placeholder="Ex: iPhone 13" />
+              <input required name="name" className="input mt-1" placeholder="Ex: Galaxy S24" />
             </label>
             <label className="text-xs font-semibold text-cr-muted">
               Armazenamento
@@ -252,7 +252,7 @@ function AddItemModal({
             </label>
             <label className="col-span-2 text-xs font-semibold text-cr-muted">
               Compatível com
-              <input required name="compatible" className="input mt-1" placeholder="Ex: iPhone 13" />
+              <input required name="compatible" className="input mt-1" placeholder="Ex: Galaxy S24" />
             </label>
             <label className="text-xs font-semibold text-cr-muted">
               Quantidade

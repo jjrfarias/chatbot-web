@@ -22,7 +22,7 @@ export function StepTradeIn({ hasTradeIn, onSetHasTradeIn, selected, onSelect, o
 
   return (
     <div>
-      <h1 className="font-display text-xl font-bold">O cliente vai dar um iPhone na troca?</h1>
+      <h1 className="font-display text-xl font-bold">O cliente vai dar um aparelho na troca?</h1>
 
       <div className="mt-4 flex gap-2.5">
         <Chip selected={hasTradeIn === true} onClick={() => onSetHasTradeIn(true)}>

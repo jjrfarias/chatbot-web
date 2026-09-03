@@ -15,6 +15,12 @@ const devices = [
   { name: "iPhone 14", color: "Meia-noite", storage: "128GB", price: 4799 },
   { name: "iPhone 13", color: "Estelar", storage: "128GB", price: 3999 },
   { name: "iPhone SE (3ª ger.)", color: "Preto", storage: "64GB", price: 2799 },
+  { name: "Galaxy S24 Ultra", color: "Titânio Preto", storage: "256GB", price: 7999 },
+  { name: "Galaxy S23", color: "Verde", storage: "128GB", price: 4499 },
+  { name: "Galaxy A54", color: "Grafite", storage: "128GB", price: 2199 },
+  { name: "Redmi Note 13 Pro", color: "Azul", storage: "256GB", price: 1899 },
+  { name: "Moto G84", color: "Preto", storage: "256GB", price: 1699 },
+  { name: "Moto Edge 40", color: "Verde", storage: "256GB", price: 2599 },
 ];
 
 const tradeInModels = [
@@ -26,6 +32,11 @@ const tradeInModels = [
   { name: "iPhone 14", baseValue: 3400 },
   { name: "iPhone 13", baseValue: 2800 },
   { name: "iPhone 12", baseValue: 2100 },
+  { name: "Galaxy S23 Ultra", baseValue: 3600 },
+  { name: "Galaxy S22", baseValue: 1800 },
+  { name: "Galaxy A54", baseValue: 1200 },
+  { name: "Redmi Note 12", baseValue: 700 },
+  { name: "Moto G62", baseValue: 550 },
 ];
 
 const checklist = [
@@ -138,16 +149,27 @@ const inventoryDevices = [
   { name: "iPhone 13", storage: "128GB", color: "Estelar", condition: "Seminovo · Grade B", quantity: 0, minQuantity: 3, costPrice: 2200, salePrice: 3199 },
   { name: "iPhone 12", storage: "64GB", color: "Azul", condition: "Seminovo · Grade B", quantity: 3, minQuantity: 3, costPrice: 1600, salePrice: 2399 },
   { name: "iPhone SE (3ª ger.)", storage: "64GB", color: "Preto", condition: "Novo", quantity: 2, minQuantity: 3, costPrice: 2100, salePrice: 2799 },
+  { name: "Galaxy S24 Ultra", storage: "256GB", color: "Titânio Preto", condition: "Novo", quantity: 3, minQuantity: 3, costPrice: 6400, salePrice: 7999 },
+  { name: "Galaxy S23", storage: "128GB", color: "Verde", condition: "Novo", quantity: 4, minQuantity: 3, costPrice: 3600, salePrice: 4499 },
+  { name: "Galaxy A54", storage: "128GB", color: "Grafite", condition: "Novo", quantity: 7, minQuantity: 3, costPrice: 1700, salePrice: 2199 },
+  { name: "Galaxy S22", storage: "128GB", color: "Preto", condition: "Seminovo · Grade A", quantity: 2, minQuantity: 3, costPrice: 1500, salePrice: 1999 },
+  { name: "Redmi Note 13 Pro", storage: "256GB", color: "Azul", condition: "Novo", quantity: 5, minQuantity: 3, costPrice: 1500, salePrice: 1899 },
+  { name: "Moto G84", storage: "256GB", color: "Preto", condition: "Novo", quantity: 4, minQuantity: 3, costPrice: 1350, salePrice: 1699 },
 ];
 
 const inventoryParts = [
   { name: "Tela OLED", compatible: "iPhone 13", quantity: 8, minQuantity: 5, supplier: "ABC Peças", costPrice: 480 },
   { name: "Tela OLED", compatible: "iPhone 14", quantity: 3, minQuantity: 5, supplier: "ABC Peças", costPrice: 620 },
+  { name: "Tela AMOLED", compatible: "Galaxy S23", quantity: 4, minQuantity: 4, supplier: "ABC Peças", costPrice: 540 },
+  { name: "Tela LCD", compatible: "Redmi Note 12 / 13", quantity: 6, minQuantity: 5, supplier: "ABC Peças", costPrice: 210 },
   { name: "Bateria", compatible: "iPhone 12 / 13", quantity: 12, minQuantity: 6, supplier: "Power Cell", costPrice: 95 },
   { name: "Bateria", compatible: "iPhone 14", quantity: 2, minQuantity: 6, supplier: "Power Cell", costPrice: 110 },
+  { name: "Bateria", compatible: "Galaxy S22 / S23", quantity: 5, minQuantity: 6, supplier: "Power Cell", costPrice: 90 },
   { name: "Conector de carga", compatible: "Universal Lightning", quantity: 15, minQuantity: 8, supplier: "FlexParts", costPrice: 45 },
+  { name: "Conector de carga", compatible: "Universal USB-C", quantity: 20, minQuantity: 8, supplier: "FlexParts", costPrice: 35 },
   { name: "Câmera traseira", compatible: "iPhone 14 Pro", quantity: 0, minQuantity: 3, supplier: "OptiCam", costPrice: 380 },
   { name: "Tampa traseira", compatible: "iPhone 13", quantity: 6, minQuantity: 4, supplier: "ABC Peças", costPrice: 150 },
+  { name: "Tampa traseira", compatible: "Moto G / Redmi Note", quantity: 5, minQuantity: 4, supplier: "ABC Peças", costPrice: 90 },
   { name: "Alto-falante", compatible: "iPhone 12", quantity: 4, minQuantity: 4, supplier: "SoundTech", costPrice: 60 },
 ];
 
@@ -373,7 +395,7 @@ async function main() {
       createdAt: new Date("2026-08-29T15:00:00"),
       customerId: customerRows.ana.id,
       customerName: customerRows.ana.name,
-      model: "iPhone 12",
+      model: "Galaxy A54",
       color: null,
       imei: null,
       deadlineLabel: "24 horas",

@@ -57,7 +57,7 @@ export function StepConfirmation({
 
           <div className="mt-5 flex flex-col border-t border-cr-border-light">
             <ReceiptRow label="Cliente" value={result.customerName} />
-            <ReceiptRow label="iPhone vendido" value={result.deviceName} />
+            <ReceiptRow label="Aparelho vendido" value={result.deviceName} />
             {result.hasTradeIn && (
               <ReceiptRow label="Aparelho na troca" value={`${result.tradeInModelName} · ${formatCurrency(result.tradeInFinalValue)}`} />
             )}

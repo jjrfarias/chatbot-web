@@ -30,7 +30,7 @@ export function StepModel({ selected, onSelect, onContinue }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-xl font-bold">Qual iPhone o cliente deseja levar?</h1>
+      <h1 className="font-display text-xl font-bold">Qual aparelho o cliente deseja levar?</h1>
 
       {loading ? (
         <p className="mt-6 text-sm text-cr-muted">Carregando catálogo...</p>

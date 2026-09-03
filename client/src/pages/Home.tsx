@@ -64,7 +64,7 @@ export function Home() {
           </div>
           <div>
             <div className="font-display text-[17px] font-bold">Nova venda</div>
-            <div className="mt-0.5 text-[12.5px] text-cr-muted">Venda de iPhone, com ou sem troca de aparelho</div>
+            <div className="mt-0.5 text-[12.5px] text-cr-muted">Venda de celular, com ou sem troca de aparelho</div>
           </div>
         </Link>
         <Link
