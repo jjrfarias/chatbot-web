@@ -42,7 +42,7 @@ export function StepConfirmation({
   if (result) {
     return (
       <div className="flex justify-center">
-        <div className="w-[480px] rounded-[20px] border border-cr-border bg-white p-8">
+        <div className="w-full max-w-[480px] rounded-[20px] border border-cr-border bg-white p-6 sm:p-8">
           <div className="flex flex-col items-center gap-2.5 text-center">
             <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-cr-accent">
               <CheckIcon className="h-6 w-6 text-white" />

@@ -42,10 +42,15 @@ export function NewSaleWizard() {
   }, []);
 
   useEffect(() => {
-    if (!customer.customerId) { Promise.resolve().then(() => setLinkedOpportunity(null)); return; }
+    if (!customer.customerId) { setLinkedOpportunity(null); return; }
+    let cancelled = false;
     api.getCustomer(customer.customerId).then((detail) => {
+      if (cancelled) return;
       setLinkedOpportunity(detail.opportunities.find((item) => !["venda_concluida", "perdido"].includes(item.stage)) ?? null);
     });
+    return () => {
+      cancelled = true;
+    };
   }, [customer.customerId]);
 
   function resetAll() {
@@ -97,7 +102,7 @@ export function NewSaleWizard() {
           : "Nova venda";
 
   return (
-    <div className="mx-auto max-w-5xl px-11 py-8">
+    <div className="mx-auto max-w-5xl px-5 py-6 sm:px-8 sm:py-8 lg:px-11">
       <div className="mb-6 flex items-center gap-2 text-[12.5px] font-semibold text-cr-muted">
         {step > 1 ? (
           <button type="button" onClick={() => setStep((s) => Math.max(1, s - 1))} className="hover:text-cr-secondary">

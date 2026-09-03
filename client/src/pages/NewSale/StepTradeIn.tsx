@@ -36,7 +36,7 @@ export function StepTradeIn({ hasTradeIn, onSetHasTradeIn, selected, onSelect, o
       {hasTradeIn && (
         <div className="mt-6">
           <div className="mb-3 text-sm font-semibold text-cr-secondary">Qual o modelo do aparelho usado?</div>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {models.map((m) => (
               <button
                 key={m.id}

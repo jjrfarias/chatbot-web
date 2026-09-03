@@ -35,7 +35,7 @@ export function StepModel({ selected, onSelect, onContinue }: Props) {
       {loading ? (
         <p className="mt-6 text-sm text-cr-muted">Carregando catálogo...</p>
       ) : (
-        <div className="mt-6 grid grid-cols-3 gap-4">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {grouped.map((variants) => {
             const first = variants[0];
             const isGroupSelected = selected && selected.name === first.name && selected.color === first.color;
@@ -76,7 +76,7 @@ export function StepModel({ selected, onSelect, onContinue }: Props) {
                     </button>
                   ))}
                 </div>
-                <div className="font-display text-[17px] font-bold">
+                <div className="break-words font-display text-[17px] font-bold">
                   {isGroupSelected ? formatCurrency(active.price) : `a partir de ${formatCurrency(cheapest.price)}`}
                 </div>
               </div>

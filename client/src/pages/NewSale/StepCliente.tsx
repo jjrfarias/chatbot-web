@@ -55,7 +55,7 @@ export function StepCliente({ value, onChange, onContinue }: Props) {
 
       {value.mode === "existente" ? (
         <div className="mt-4 flex flex-col gap-3">
-          <div className="flex w-[360px] items-center gap-2.5 rounded-full border border-cr-border bg-white px-[18px] py-[11px]">
+          <div className="flex w-full items-center gap-2.5 rounded-full border border-cr-border bg-white px-[18px] py-[11px] sm:w-[360px]">
             <SearchIcon className="h-[15px] w-[15px] text-cr-muted" />
             <input
               value={search}
@@ -64,7 +64,7 @@ export function StepCliente({ value, onChange, onContinue }: Props) {
               className="w-full bg-transparent text-[13px] outline-none placeholder:text-cr-placeholder"
             />
           </div>
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             {filtered.map((c) => (
               <div
                 key={c.id}
