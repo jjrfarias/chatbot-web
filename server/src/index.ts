@@ -1,6 +1,7 @@
 import "dotenv/config";
 import path from "path";
 import express from "express";
+import "express-async-errors";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { authRouter } from "./routes/auth";
@@ -44,6 +45,14 @@ app.use(express.static(clientDist));
 app.get(/^(?!\/api).*/, (_req, res) => {
   res.sendFile(path.join(clientDist, "index.html"));
 });
+
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error(err);
+  if (res.headersSent) return;
+  res.status(err?.status ?? 500).json({ error: "Erro ao processar a requisição" });
+});
+
+process.on("unhandledRejection", (err) => console.error("Unhandled rejection:", err));
 
 app.listen(PORT, () => {
   console.log(`UTI Cel API rodando em http://localhost:${PORT}`);
